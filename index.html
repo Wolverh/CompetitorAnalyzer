@@ -19,99 +19,124 @@
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
-    <!-- Main container for the trigger button and status messages -->
+    <!-- Main container -->
     <div class="text-center p-8 bg-gray-800 rounded-xl shadow-2xl border border-gray-700 max-w-sm w-full">
         
         <!-- Header Section -->
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-cyan-400">Automation Trigger</h1>
-            <p class="text-gray-400 mt-2">Click the button to run the Make.com workflow.</p>
+            <p id="subheading" class="text-gray-400 mt-2">Please enter the password to continue.</p>
         </div>
 
-        <!-- The Button -->
-        <button id="runButton" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:bg-gray-600 disabled:cursor-not-allowed">
-            <span id="buttonText">Send "run"</span>
-            <!-- Loading spinner, hidden by default -->
-            <svg id="loadingSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        </button>
+        <!-- Password Section (Visible by default) -->
+        <div id="passwordSection">
+            <input type="password" id="passwordInput" placeholder="Enter Password" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4">
+            <button id="unlockButton" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out">
+                Unlock
+            </button>
+            <div id="passwordError" class="mt-4 text-sm text-red-400 h-5">&nbsp;</div>
+        </div>
 
-        <!-- Status Message Area -->
-        <div id="statusMessage" class="mt-6 text-sm h-5">&nbsp;</div>
+        <!-- Trigger Section (Hidden by default) -->
+        <div id="triggerSection" class="hidden">
+            <!-- The Button -->
+            <button id="runButton" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:bg-gray-600 disabled:cursor-not-allowed">
+                <span id="buttonText">Send "run"</span>
+                <!-- Loading spinner, hidden by default -->
+                <svg id="loadingSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
 
+            <!-- Status Message Area -->
+            <div id="statusMessage" class="mt-6 text-sm h-5">&nbsp;</div>
+        </div>
     </div>
 
     <script>
         // --- Element References ---
+        const passwordSection = document.getElementById('passwordSection');
+        const triggerSection = document.getElementById('triggerSection');
+        const passwordInput = document.getElementById('passwordInput');
+        const unlockButton = document.getElementById('unlockButton');
+        const passwordError = document.getElementById('passwordError');
+        const subheading = document.getElementById('subheading');
+
         const runButton = document.getElementById('runButton');
         const buttonText = document.getElementById('buttonText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const statusMessage = document.getElementById('statusMessage');
 
         // --- Configuration ---
-        // The webhook URL provided by the user
+        const correctPassword = 'Noura';
         const webhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
-        
-        // The payload to be sent to the webhook
         const payload = {
             "THEMAGICWORD": "run"
         };
 
-        // --- Event Listener ---
+        // --- Password Logic ---
+        unlockButton.addEventListener('click', () => {
+            const enteredPassword = passwordInput.value;
+            if (enteredPassword === correctPassword) {
+                // On correct password, hide password section and show trigger section
+                passwordSection.classList.add('hidden');
+                triggerSection.classList.remove('hidden');
+                subheading.textContent = 'Click the button to run the Make.com workflow.';
+            } else {
+                // On incorrect password, show an error message
+                passwordError.textContent = 'Incorrect password. Please try again.';
+                passwordInput.value = ''; // Clear the input field
+                // Clear the error message after 3 seconds
+                setTimeout(() => {
+                    passwordError.textContent = '\u00A0'; // Use non-breaking space to maintain height
+                }, 3000);
+            }
+        });
+        
+        // Allow pressing Enter to unlock
+        passwordInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                unlockButton.click();
+            }
+        });
+
+
+        // --- Webhook Trigger Logic (remains the same) ---
         runButton.addEventListener('click', async () => {
-            // --- UI State: Loading ---
-            // Disable the button to prevent multiple clicks
             runButton.disabled = true; 
-            // Hide the button text and show the spinner
             buttonText.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
-            // Reset status message
             statusMessage.textContent = 'Sending...';
             statusMessage.className = 'mt-6 text-sm text-gray-400';
 
             try {
-                // --- The Fetch Request ---
-                // We use a try...catch block to handle network errors
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: {
-                        // We don't need Content-Type for Make.com webhooks with a simple body,
-                        // but it's good practice for other APIs. Make.com will parse it correctly.
                         'Content-Type': 'application/json'
                     },
-                    // Convert the JavaScript object to a JSON string
                     body: JSON.stringify(payload) 
                 });
 
-                // --- Handle the Response ---
-                // Make.com webhooks typically respond with "Accepted" and a 200 status code on success.
                 if (response.ok) {
-                    console.log('Successfully triggered the webhook.');
                     statusMessage.textContent = 'Success! Workflow triggered.';
                     statusMessage.className = 'mt-6 text-sm text-green-400';
                 } else {
-                    // If the response is not ok, handle the error
-                    console.error('Webhook trigger failed.', response);
                     statusMessage.textContent = `Error: ${response.status} ${response.statusText}`;
                     statusMessage.className = 'mt-6 text-sm text-red-400';
                 }
 
             } catch (error) {
-                // This catches network errors (e.g., no internet connection)
                 console.error('An error occurred during the fetch operation:', error);
                 statusMessage.textContent = 'Network error. Check console.';
                 statusMessage.className = 'mt-6 text-sm text-red-400';
             } finally {
-                // --- UI State: Reset ---
-                // This 'finally' block runs whether the request succeeded or failed
-                // Re-enable the button after a short delay to show the status message
                 setTimeout(() => {
                     runButton.disabled = false;
                     buttonText.classList.remove('hidden');
                     loadingSpinner.classList.add('hidden');
-                }, 2000); // 2-second delay
+                }, 2000);
             }
         });
     </script>
