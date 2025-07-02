@@ -110,25 +110,15 @@
         const statusMessage = document.getElementById('statusMessage');
 
         // --- Sound Synthesis Setup (Tone.js) ---
-        // Create a synth that we can reuse for all sound effects
         const synth = new Tone.Synth().toDestination();
         let audioStarted = false;
-
-        // Function to play a sound for incorrect password
-        function playErrorSound() {
-            synth.triggerAttackRelease("C2", "8n");
-        }
-        // Function to play a sound for correct password
+        function playErrorSound() { synth.triggerAttackRelease("C2", "8n"); }
         function playSuccessSound() {
             synth.triggerAttackRelease("C4", "16n", Tone.now());
             synth.triggerAttackRelease("E4", "16n", Tone.now() + 0.1);
             synth.triggerAttackRelease("G4", "16n", Tone.now() + 0.2);
         }
-        // Function to play a simple click sound
-        function playClickSound() {
-            synth.triggerAttackRelease("C5", "32n");
-        }
-        // Function to play a sound for a failed transmission
+        function playClickSound() { synth.triggerAttackRelease("C5", "32n"); }
         function playFailureSound() {
             synth.triggerAttackRelease("G2", "16n", Tone.now());
             synth.triggerAttackRelease("E2", "16n", Tone.now() + 0.1);
@@ -140,10 +130,31 @@
         const webhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
         const payload = { "THEMAGICWORD": "run" };
 
+        // --- Cookie Helper Functions ---
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            // Set cookie with SameSite=Lax for security
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i=0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
         // --- Password Logic ---
         async function checkPassword() {
-            // The Web Audio API requires a user gesture to start.
-            // We start it on the first click.
             if (!audioStarted) {
                 await Tone.start();
                 audioStarted = true;
@@ -153,6 +164,8 @@
             const enteredPasswordHash = btoa(passwordInput.value);
             if (enteredPasswordHash === correctPasswordHash) {
                 playSuccessSound();
+                // Set a cookie for 7 days on successful login
+                setCookie('wolverAuth', 'true', 7);
                 passwordSection.classList.add('hidden');
                 triggerSection.classList.remove('hidden');
                 subheading.textContent = 'System Unlocked. Ready to Initiate.';
@@ -173,7 +186,7 @@
 
         // --- Webhook Trigger Logic ---
         runButton.addEventListener('click', async () => {
-            playClickSound(); // Play click sound on interaction
+            playClickSound();
             runButton.disabled = true;
             buttonText.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
@@ -188,16 +201,16 @@
                 });
 
                 if (response.ok) {
-                    playSuccessSound(); // Play success sound on successful transmission
+                    playSuccessSound();
                     statusMessage.textContent = 'Transmission Successful. Workflow Initiated.';
                     statusMessage.className = 'mt-6 text-sm text-green-400';
                 } else {
-                    playFailureSound(); // Play failure sound on error
+                    playFailureSound();
                     statusMessage.textContent = `Transmission Error: ${response.status}`;
                     statusMessage.className = 'mt-6 text-sm text-red-400';
                 }
             } catch (error) {
-                playFailureSound(); // Play failure sound on network error
+                playFailureSound();
                 console.error('An error occurred during the fetch operation:', error);
                 statusMessage.textContent = 'Network Failure. Check Console.';
                 statusMessage.className = 'mt-6 text-sm text-red-400';
@@ -209,6 +222,19 @@
                 }, 2000);
             }
         });
+
+        // --- Page Load Logic (Check for Cookie) ---
+        // This runs as soon as the page is loaded
+        window.onload = function() {
+            if (getCookie('wolverAuth') === 'true') {
+                console.log('User is already authenticated via cookie.');
+                passwordSection.classList.add('hidden');
+                triggerSection.classList.remove('hidden');
+                subheading.textContent = 'System Unlocked. Welcome Back.';
+            } else {
+                console.log('User not authenticated. Showing password screen.');
+            }
+        };
     </script>
 
 </body>
