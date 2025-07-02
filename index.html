@@ -10,35 +10,202 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        * {
+            cursor: none !important;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(-45deg, #0f0f23, #1a0033, #2d1b69, #0a0a0a);
+            background: linear-gradient(-45deg, #0f0f23, #1a0033, #2d1b69, #0a0a0a, #4c1d95, #1e1b4b);
             background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            animation: gradientShift 8s ease infinite;
             min-height: 100vh;
+            overflow: hidden;
         }
 
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
             100% { background-position: 0% 50%; }
+        }
+
+        /* Custom Cursor */
+        #cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.8) 0%, rgba(147, 51, 234, 0.3) 70%, transparent 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+        }
+
+        #cursor-trail {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: rgba(147, 51, 234, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            background: rgba(147, 51, 234, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Matrix Rain Effect */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .matrix-char {
+            position: absolute;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            animation: matrixFall 3s linear infinite;
+        }
+
+        @keyframes matrixFall {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+            color: white;
+            font-size: 4rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
+                0.025em 0.04em 0 #fffc00;
+            animation: glitch 725ms infinite;
+        }
+
+        .glitch span {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .glitch span:first-child {
+            animation: glitch 500ms infinite;
+            color: #00fffc;
+            z-index: -1;
+        }
+
+        .glitch span:last-child {
+            animation: glitch 375ms infinite;
+            color: #fc00ff;
+            z-index: -2;
+        }
+
+        @keyframes glitch {
+            0% { transform: none; filter: hue-rotate(0deg); }
+            20% { transform: skew(-0.5deg, -0.9deg); filter: hue-rotate(90deg); }
+            40% { transform: none; filter: hue-rotate(180deg); }
+            60% { transform: skew(0.8deg, -0.1deg); filter: hue-rotate(270deg); }
+            80% { transform: none; filter: hue-rotate(360deg); }
+            100% { transform: none; filter: hue-rotate(0deg); }
+        }
+
+        /* Hexagon Grid */
+        .hex-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .hex {
+            position: absolute;
+            width: 60px;
+            height: 35px;
+            background: rgba(147, 51, 234, 0.2);
+            margin: 17.5px 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 17.5px solid rgba(147, 51, 234, 0.2);
+            transform: rotate(0deg);
+            animation: hexFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes hexFloat {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
         }
 
         .glass-container {
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .glass-container:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px 0 rgba(31, 38, 135, 0.5);
         }
 
         .neon-glow {
             box-shadow: 0 0 20px rgba(147, 51, 234, 0.5), 0 0 40px rgba(147, 51, 234, 0.3), 0 0 60px rgba(147, 51, 234, 0.1);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neon-glow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .neon-glow:hover::before {
+            left: 100%;
         }
 
         .neon-glow:hover {
             box-shadow: 0 0 30px rgba(147, 51, 234, 0.8), 0 0 60px rgba(147, 51, 234, 0.5), 0 0 90px rgba(147, 51, 234, 0.2);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.05);
         }
 
         .orbitron {
@@ -92,134 +259,492 @@
             0%, 100% { background-color: rgba(239, 68, 68, 0.1); }
             50% { background-color: rgba(239, 68, 68, 0.3); }
         }
+
+        /* Scan Lines */
+        .scan-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(147, 51, 234, 0.03) 2px,
+                rgba(147, 51, 234, 0.03) 4px
+            );
+            animation: scanline 0.1s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* Interactive Elements */
+        .interactive {
+            transition: all 0.3s ease;
+        }
+
+        .interactive:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        .interactive:active {
+            transform: scale(0.95);
+            filter: brightness(0.8);
+        }
+
+        /* Sound Visualizer */
+        .sound-visualizer {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: end;
+            gap: 2px;
+            z-index: 100;
+        }
+
+        .sound-bar {
+            width: 4px;
+            background: linear-gradient(to top, #9333ea, #ec4899);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        /* Floating UI Elements */
+        .floating-ui {
+            position: fixed;
+            z-index: 5;
+            color: rgba(147, 51, 234, 0.6);
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            pointer-events: none;
+            animation: floatUI 3s ease-in-out infinite;
+        }
+
+        @keyframes floatUI {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Audio Status Indicator */
+        .audio-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            color: #9333ea;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+
+        .audio-enabled {
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-    <div class="glass-container rounded-2xl p-8 w-full max-w-md">
-        <!-- Login Screen -->
-        <div id="loginScreen" class="text-center">
-            <h1 class="orbitron text-4xl font-black text-white mb-8 pulse-glow">WOLVER'S HUB</h1>
-            
-            <div class="mb-6">
-                <div class="relative">
-                    <input 
-                        type="password" 
-                        id="passwordInput" 
-                        placeholder="Enter access code..." 
-                        class="w-full px-4 py-3 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-300"
-                        autocomplete="off"
-                    >
-                    <button 
-                        type="button" 
-                        id="togglePassword" 
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200"
-                    >
-                        <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div id="errorMessage" class="text-red-400 text-sm mt-2 opacity-0 transition-opacity duration-300"></div>
-            </div>
-            
-            <button 
-                id="loginButton" 
-                class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-            >
-                ACCESS SYSTEM
-            </button>
-        </div>
+    <!-- Custom Cursor -->
+    <div id="cursor"></div>
+    <div id="cursor-trail"></div>
 
-        <!-- Main Interface -->
-        <div id="mainInterface" class="text-center hidden">
-            <h1 class="orbitron text-4xl font-black text-white mb-4 pulse-glow">WOLVER'S HUB</h1>
-            <p class="text-gray-300 mb-8 text-lg">You're now using Wolver's stuff. Be grateful and happy.</p>
-            
-            <button 
-                id="initiateButton" 
-                class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 px-8 rounded-lg neon-glow orbitron text-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-                <span id="buttonText">INITIATE</span>
-            </button>
-            
-            <div id="statusMessage" class="mt-4 text-sm opacity-0 transition-all duration-300"></div>
-            
-            <button 
-                id="logoutButton" 
-                class="mt-6 text-gray-400 hover:text-white text-sm transition-colors duration-200 underline"
-            >
-                Logout
-            </button>
+    <!-- Background Effects -->
+    <div class="matrix-rain" id="matrixRain"></div>
+    <div class="hex-grid" id="hexGrid"></div>
+    <div class="scan-lines"></div>
+
+    <!-- Sound Visualizer -->
+    <div class="sound-visualizer" id="soundVisualizer">
+        <div class="sound-bar" style="height: 10px;"></div>
+        <div class="sound-bar" style="height: 20px;"></div>
+        <div class="sound-bar" style="height: 15px;"></div>
+        <div class="sound-bar" style="height: 25px;"></div>
+        <div class="sound-bar" style="height: 12px;"></div>
+        <div class="sound-bar" style="height: 18px;"></div>
+        <div class="sound-bar" style="height: 22px;"></div>
+        <div class="sound-bar" style="height: 8px;"></div>
+    </div>
+
+    <!-- Audio Status -->
+    <div class="audio-status" id="audioStatus">AUDIO: INITIALIZING</div>
+
+    <!-- Floating UI Elements -->
+    <div class="floating-ui" style="top: 15%; left: 10%;">SYSTEM.ACTIVE</div>
+    <div class="floating-ui" style="top: 25%; right: 15%; animation-delay: -1s;">CONN.SECURE</div>
+    <div class="floating-ui" style="bottom: 30%; left: 5%; animation-delay: -2s;">PROXY.ENABLED</div>
+    <div class="floating-ui" style="bottom: 40%; right: 10%; animation-delay: -0.5s;">FIREWALL.ON</div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="glass-container rounded-2xl p-8 w-full max-w-md interactive">
+            <!-- Login Screen -->
+            <div id="loginScreen" class="text-center">
+                <h1 class="orbitron text-4xl font-black text-white mb-8 pulse-glow glitch">
+                    WOLVER'S HUB
+                    <span>WOLVER'S HUB</span>
+                    <span>WOLVER'S HUB</span>
+                </h1>
+                
+                <div class="mb-6">
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="passwordInput" 
+                            placeholder="Enter access code..." 
+                            class="w-full px-4 py-3 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-300 interactive"
+                            autocomplete="off"
+                        >
+                        <button 
+                            type="button" 
+                            id="togglePassword" 
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200 interactive"
+                        >
+                            <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="errorMessage" class="text-red-400 text-sm mt-2 opacity-0 transition-opacity duration-300"></div>
+                </div>
+                
+                <button 
+                    id="loginButton" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 interactive"
+                >
+                    ACCESS SYSTEM
+                </button>
+            </div>
+
+            <!-- Main Interface -->
+            <div id="mainInterface" class="text-center hidden">
+                <h1 class="orbitron text-4xl font-black text-white mb-4 pulse-glow glitch">
+                    WOLVER'S HUB
+                    <span>WOLVER'S HUB</span>
+                    <span>WOLVER'S HUB</span>
+                </h1>
+                <p class="text-gray-300 mb-8 text-lg">You're now using Wolver's stuff. Be grateful and happy.</p>
+                
+                <button 
+                    id="initiateButton" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 px-8 rounded-lg neon-glow orbitron text-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none interactive"
+                >
+                    <span id="buttonText">INITIATE</span>
+                </button>
+                
+                <div id="statusMessage" class="mt-4 text-sm opacity-0 transition-all duration-300"></div>
+                
+                <button 
+                    id="logoutButton" 
+                    class="mt-6 text-gray-400 hover:text-white text-sm transition-colors duration-200 underline interactive"
+                >
+                    Logout
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Audio system with Tone.js
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        const cursorTrail = document.getElementById('cursor-trail');
+        let mouseX = 0, mouseY = 0;
+        let trailX = 0, trailY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.style.left = mouseX - 10 + 'px';
+            cursor.style.top = mouseY - 10 + 'px';
+        });
+
+        // Smooth trailing cursor
+        function animateTrail() {
+            trailX += (mouseX - trailX) * 0.1;
+            trailY += (mouseY - trailY) * 0.1;
+            cursorTrail.style.left = trailX - 4 + 'px';
+            cursorTrail.style.top = trailY - 4 + 'px';
+            requestAnimationFrame(animateTrail);
+        }
+        animateTrail();
+
+        // Particle System
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.width = Math.random() * 4 + 2 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.animationDelay = Math.random() * 6 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 20000);
+        }
+
+        // Create particles continuously
+        setInterval(createParticle, 500);
+
+        // Matrix Rain Effect
+        function createMatrixRain() {
+            const matrixContainer = document.getElementById('matrixRain');
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+            
+            for (let i = 0; i < 50; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * window.innerWidth + 'px';
+                char.style.animationDelay = Math.random() * 3 + 's';
+                char.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                matrixContainer.appendChild(char);
+
+                setTimeout(() => {
+                    char.remove();
+                }, 5000);
+            }
+        }
+
+        setInterval(createMatrixRain, 200);
+
+        // Hexagon Grid
+        function createHexGrid() {
+            const hexContainer = document.getElementById('hexGrid');
+            for (let i = 0; i < 20; i++) {
+                const hex = document.createElement('div');
+                hex.className = 'hex';
+                hex.style.left = Math.random() * window.innerWidth + 'px';
+                hex.style.top = Math.random() * window.innerHeight + 'px';
+                hex.style.animationDelay = Math.random() * 4 + 's';
+                hexContainer.appendChild(hex);
+            }
+        }
+
+        createHexGrid();
+
+        // Sound Visualizer Animation
+        function animateVisualizer() {
+            const bars = document.querySelectorAll('.sound-bar');
+            bars.forEach(bar => {
+                const height = Math.random() * 30 + 5;
+                bar.style.height = height + 'px';
+            });
+        }
+
+        setInterval(animateVisualizer, 100);
+
+        // Enhanced Audio System
         class AudioManager {
             constructor() {
                 this.isInitialized = false;
-                this.initAudio();
+                this.audioContext = null;
+                this.statusElement = document.getElementById('audioStatus');
+                this.setupAudio();
+            }
+
+            async setupAudio() {
+                try {
+                    this.statusElement.textContent = 'AUDIO: INITIALIZING';
+                    
+                    // Initialize audio context on first user interaction
+                    document.addEventListener('click', async () => {
+                        if (!this.isInitialized) {
+                            await this.initAudio();
+                        }
+                    }, { once: true });
+                    
+                    document.addEventListener('keydown', async () => {
+                        if (!this.isInitialized) {
+                            await this.initAudio();
+                        }
+                    }, { once: true });
+                    
+                } catch (error) {
+                    console.warn('Audio setup failed:', error);
+                    this.statusElement.textContent = 'AUDIO: DISABLED';
+                }
             }
 
             async initAudio() {
                 try {
                     await Tone.start();
                     this.isInitialized = true;
+                    this.statusElement.textContent = 'AUDIO: ENABLED';
+                    this.statusElement.classList.add('audio-enabled');
                     console.log('Audio context initialized');
+                    
+                    // Play initialization sound
+                    this.playInitSound();
                 } catch (error) {
                     console.warn('Audio initialization failed:', error);
                     this.isInitialized = false;
+                    this.statusElement.textContent = 'AUDIO: FAILED';
+                }
+            }
+
+            playInitSound() {
+                if (!this.isInitialized) return;
+                try {
+                    const synth = new Tone.Synth({
+                        oscillator: {
+                            type: "sine"
+                        },
+                        envelope: {
+                            attack: 0.1,
+                            decay: 0.3,
+                            sustain: 0.1,
+                            release: 0.8
+                        }
+                    }).toDestination();
+                    
+                    synth.triggerAttackRelease("C4", "0.2");
+                    setTimeout(() => synth.triggerAttackRelease("E4", "0.2"), 200);
+                } catch (error) {
+                    console.warn('Error playing init sound:', error);
                 }
             }
 
             playErrorSound() {
                 if (!this.isInitialized) return;
                 try {
-                    const synth = new Tone.Synth().toDestination();
-                    synth.triggerAttackRelease("C2", "0.2");
+                    const synth = new Tone.Synth({
+                        oscillator: {
+                            type: "sawtooth"
+                        },
+                        envelope: {
+                            attack: 0.01,
+                            decay: 0.1,
+                            sustain: 0.5,
+                            release: 0.5
+                        }
+                    }).toDestination();
+                    
+                    synth.triggerAttackRelease("C2", "0.3");
+                    setTimeout(() => synth.triggerAttackRelease("G1", "0.3"), 150);
                 } catch (error) {
-                    console.warn('Error playing sound:', error);
+                    console.warn('Error playing error sound:', error);
                 }
             }
 
             playSuccessSound() {
                 if (!this.isInitialized) return;
                 try {
-                    const synth = new Tone.Synth().toDestination();
-                    synth.triggerAttackRelease("C4", "0.1");
-                    setTimeout(() => synth.triggerAttackRelease("E4", "0.1"), 100);
+                    const synth = new Tone.Synth({
+                        oscillator: {
+                            type: "sine"
+                        },
+                        envelope: {
+                            attack: 0.01,
+                            decay: 0.2,
+                            sustain: 0.3,
+                            release: 0.8
+                        }
+                    }).toDestination();
+                    
+                    synth.triggerAttackRelease("C4", "0.2");
+                    setTimeout(() => synth.triggerAttackRelease("E4", "0.2"), 100);
                     setTimeout(() => synth.triggerAttackRelease("G4", "0.2"), 200);
+                    setTimeout(() => synth.triggerAttackRelease("C5", "0.4"), 300);
                 } catch (error) {
-                    console.warn('Error playing sound:', error);
+                    console.warn('Error playing success sound:', error);
                 }
             }
 
             playClickSound() {
                 if (!this.isInitialized) return;
                 try {
-                    const synth = new Tone.Synth().toDestination();
+                    const synth = new Tone.Synth({
+                        oscillator: {
+                            type: "square"
+                        },
+                        envelope: {
+                            attack: 0.001,
+                            decay: 0.1,
+                            sustain: 0.1,
+                            release: 0.1
+                        }
+                    }).toDestination();
+                    
                     synth.triggerAttackRelease("G5", "0.05");
                 } catch (error) {
-                    console.warn('Error playing sound:', error);
+                    console.warn('Error playing click sound:', error);
                 }
             }
 
             playFailureSound() {
                 if (!this.isInitialized) return;
                 try {
-                    const synth = new Tone.Synth().toDestination();
-                    synth.triggerAttackRelease("C3", "0.1");
-                    setTimeout(() => synth.triggerAttackRelease("A2", "0.1"), 100);
-                    setTimeout(() => synth.triggerAttackRelease("F2", "0.2"), 200);
+                    const synth = new Tone.Synth({
+                        oscillator: {
+                            type: "triangle"
+                        },
+                        envelope: {
+                            attack: 0.1,
+                            decay: 0.3,
+                            sustain: 0.2,
+                            release: 1.0
+                        }
+                    }).toDestination();
+                    
+                    synth.triggerAttackRelease("C3", "0.2");
+                    setTimeout(() => synth.triggerAttackRelease("A2", "0.2"), 200);
+                    setTimeout(() => synth.triggerAttackRelease("F2", "0.4"), 400);
                 } catch (error) {
-                    console.warn('Error playing sound:', error);
+                    console.warn('Error playing failure sound:', error);
+                }
+            }
+
+            playHoverSound() {
+                if (!this.isInitialized) return;
+                try {
+                    const synth = new Tone.Synth({
+                        oscillator: {
+                            type: "sine"
+                        },
+                        envelope: {
+                            attack: 0.01,
+                            decay: 0.1,
+                            sustain: 0.1,
+                            release: 0.2
+                        }
+                    }).toDestination();
+                    
+                    synth.triggerAttackRelease("A4", "0.05");
+                } catch (error) {
+                    console.warn('Error playing hover sound:', error);
                 }
             }
         }
 
         // Initialize audio manager
         const audioManager = new AudioManager();
+
+        // Add hover sounds to interactive elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const interactiveElements = document.querySelectorAll('.interactive');
+            interactiveElements.forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    audioManager.playHoverSound();
+                });
+            });
+        });
 
         // Authentication system
         class AuthSystem {
@@ -290,11 +815,37 @@
         const statusMessage = document.getElementById('statusMessage');
         const logoutButton = document.getElementById('logoutButton');
 
+        // Enhanced interactive feedback
+        function addInteractiveEffects() {
+            const interactiveElements = document.querySelectorAll('.interactive');
+            
+            interactiveElements.forEach(element => {
+                element.addEventListener('mouseenter', (e) => {
+                    audioManager.playHoverSound();
+                    e.target.style.filter = 'brightness(1.2) saturate(1.3)';
+                });
+                
+                element.addEventListener('mouseleave', (e) => {
+                    e.target.style.filter = '';
+                });
+                
+                element.addEventListener('mousedown', (e) => {
+                    audioManager.playClickSound();
+                    e.target.style.transform = 'scale(0.95)';
+                });
+                
+                element.addEventListener('mouseup', (e) => {
+                    e.target.style.transform = '';
+                });
+            });
+        }
+
         // Password visibility toggle
         let passwordVisible = false;
         togglePassword.addEventListener('click', () => {
             passwordVisible = !passwordVisible;
             passwordInput.type = passwordVisible ? 'text' : 'password';
+            audioManager.playClickSound();
             
             if (passwordVisible) {
                 eyeIcon.innerHTML = `
@@ -309,6 +860,27 @@
             }
         });
 
+        // Screen shake effect
+        function shakeScreen(intensity = 10, duration = 500) {
+            const container = document.querySelector('.main-container');
+            let startTime = Date.now();
+            
+            function shake() {
+                const elapsed = Date.now() - startTime;
+                if (elapsed < duration) {
+                    const progress = elapsed / duration;
+                    const currentIntensity = intensity * (1 - progress);
+                    const x = (Math.random() - 0.5) * currentIntensity;
+                    const y = (Math.random() - 0.5) * currentIntensity;
+                    container.style.transform = `translate(${x}px, ${y}px)`;
+                    requestAnimationFrame(shake);
+                } else {
+                    container.style.transform = '';
+                }
+            }
+            shake();
+        }
+
         // Login functionality
         function showError(message) {
             errorMessage.textContent = message;
@@ -316,6 +888,7 @@
             loginScreen.classList.add('error-flash');
             setTimeout(() => loginScreen.classList.remove('error-flash'), 500);
             audioManager.playErrorSound();
+            shakeScreen(5, 300);
         }
 
         function hideError() {
@@ -328,6 +901,11 @@
             mainInterface.classList.add('success-flash');
             setTimeout(() => mainInterface.classList.remove('success-flash'), 500);
             audioManager.playSuccessSound();
+            
+            // Create success particles
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => createSuccessParticle(), i * 50);
+            }
         }
 
         function showLoginScreen() {
@@ -337,9 +915,36 @@
             hideError();
         }
 
+        // Success particle effect
+        function createSuccessParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '6px';
+            particle.style.height = '6px';
+            particle.style.background = '#10b981';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '1000';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = window.innerHeight + 'px';
+            
+            document.body.appendChild(particle);
+            
+            particle.animate([
+                { transform: 'translateY(0px)', opacity: 1 },
+                { transform: `translateY(-${window.innerHeight + 100}px)`, opacity: 0 }
+            ], {
+                duration: 2000,
+                easing: 'ease-out'
+            }).addEventListener('finish', () => {
+                particle.remove();
+            });
+        }
+
         // Login event handlers
         loginButton.addEventListener('click', () => {
             const password = passwordInput.value.trim();
+            audioManager.playClickSound();
             
             if (!password) {
                 showError('Please enter the access code');
@@ -361,13 +966,25 @@
             hideError();
         });
 
+        // Real-time typing sound effects
+        passwordInput.addEventListener('input', () => {
+            if (audioManager.isInitialized) {
+                const synth = new Tone.Synth({
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 }
+                }).toDestination();
+                synth.triggerAttackRelease("C5", "0.05");
+            }
+        });
+
         // Logout functionality
         logoutButton.addEventListener('click', () => {
             authSystem.logout();
             showLoginScreen();
+            audioManager.playClickSound();
         });
 
-        // Webhook functionality
+        // Enhanced Webhook functionality
         async function triggerWebhook() {
             const webhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
             const payload = { "THEMAGICWORD": "run" };
@@ -376,8 +993,14 @@
                 initiateButton.disabled = true;
                 initiateButton.classList.add('loading');
                 buttonText.textContent = 'PROCESSING...';
+                audioManager.playClickSound();
                 
                 showStatus('Initiating sequence...', 'text-blue-400');
+
+                // Create loading particles
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => createLoadingParticle(), i * 100);
+                }
 
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
@@ -392,6 +1015,11 @@
                     mainInterface.classList.add('success-flash');
                     setTimeout(() => mainInterface.classList.remove('success-flash'), 500);
                     audioManager.playSuccessSound();
+                    
+                    // Success explosion effect
+                    for (let i = 0; i < 30; i++) {
+                        setTimeout(() => createSuccessParticle(), i * 30);
+                    }
                 } else {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -402,6 +1030,12 @@
                 mainInterface.classList.add('error-flash');
                 setTimeout(() => mainInterface.classList.remove('error-flash'), 500);
                 audioManager.playFailureSound();
+                shakeScreen(8, 600);
+                
+                // Error particles
+                for (let i = 0; i < 15; i++) {
+                    setTimeout(() => createErrorParticle(), i * 50);
+                }
             } finally {
                 initiateButton.disabled = false;
                 initiateButton.classList.remove('loading');
@@ -413,6 +1047,63 @@
             }
         }
 
+        // Loading particle effect
+        function createLoadingParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '4px';
+            particle.style.height = '4px';
+            particle.style.background = '#3b82f6';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '1000';
+            particle.style.left = '50%';
+            particle.style.top = '50%';
+            
+            document.body.appendChild(particle);
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 100 + Math.random() * 100;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+            
+            particle.animate([
+                { transform: 'translate(-50%, -50%)', opacity: 1 },
+                { transform: `translate(${x}px, ${y}px)`, opacity: 0 }
+            ], {
+                duration: 1000,
+                easing: 'ease-out'
+            }).addEventListener('finish', () => {
+                particle.remove();
+            });
+        }
+
+        // Error particle effect
+        function createErrorParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '5px';
+            particle.style.height = '5px';
+            particle.style.background = '#ef4444';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '1000';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = Math.random() * window.innerHeight + 'px';
+            
+            document.body.appendChild(particle);
+            
+            particle.animate([
+                { transform: 'scale(1)', opacity: 1 },
+                { transform: 'scale(0)', opacity: 0 }
+            ], {
+                duration: 1000,
+                easing: 'ease-in'
+            }).addEventListener('finish', () => {
+                particle.remove();
+            });
+        }
+
         function showStatus(message, colorClass) {
             statusMessage.textContent = message;
             statusMessage.className = `mt-4 text-sm transition-all duration-300 ${colorClass}`;
@@ -421,12 +1112,13 @@
 
         // Initiate button event handler
         initiateButton.addEventListener('click', () => {
-            audioManager.playClickSound();
             triggerWebhook();
         });
 
         // Initialize app
         function initializeApp() {
+            addInteractiveEffects();
+            
             if (authSystem.isAuthenticated()) {
                 showMainInterface();
             } else {
@@ -434,8 +1126,59 @@
             }
         }
 
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Konami code easter egg
+            if (e.code === 'ArrowUp') {
+                audioManager.playHoverSound();
+            }
+            
+            // ESC to logout
+            if (e.key === 'Escape' && !loginScreen.classList.contains('hidden')) {
+                logoutButton.click();
+            }
+        });
+
+        // Add window resize handler for responsive particles
+        window.addEventListener('resize', () => {
+            // Recreate hex grid on resize
+            document.getElementById('hexGrid').innerHTML = '';
+            createHexGrid();
+        });
+
         // Start the application
         document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Additional visual enhancements
+        setInterval(() => {
+            // Random glitch effects
+            if (Math.random() < 0.1) {
+                const glitchElements = document.querySelectorAll('.glitch');
+                glitchElements.forEach(el => {
+                    el.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
+                    setTimeout(() => {
+                        el.style.filter = '';
+                    }, 100);
+                });
+            }
+        }, 1000);
+
+        // Ambient sound loop (very subtle)
+        setInterval(() => {
+            if (audioManager.isInitialized && Math.random() < 0.05) {
+                const synth = new Tone.Synth({
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 2, decay: 1, sustain: 0, release: 2 }
+                }).toDestination();
+                
+                const volume = new Tone.Volume(-30).toDestination();
+                synth.connect(volume);
+                
+                const notes = ['C2', 'G2', 'C3'];
+                const note = notes[Math.floor(Math.random() * notes.length)];
+                synth.triggerAttackRelease(note, "4n");
+            }
+        }, 5000);
     </script>
 </body>
 </html>
