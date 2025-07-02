@@ -1,225 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind (CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Tone.js (sound synthesis) -->
-  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.39/build/Tone.js"></script>
+<!-- Tone.js -->
+<script src="https://cdn.jsdelivr.net/npm/tone@14.8.39/build/Tone.js"></script>
 
-  <title>WOLVER'S HUB</title>
+<title>WOLVER'S HUB</title>
 
-  <style>
-    /* animated gradient background */
-    @keyframes gradient {
-      0%   {background-position: 0% 50%}
-      50%  {background-position: 100% 50%}
-      100% {background-position: 0% 50%}
-    }
-    body{
-      background: linear-gradient(-45deg,#0a0027,#15003c,#000c3d,#2f0078);
-      background-size: 400% 400%;
-      animation: gradient 15s ease infinite;
-      font-family: 'Inter', sans-serif;
-    }
-    h1{font-family:'Orbitron',sans-serif;}
-
-    /* glass panel */
-    .glass{
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.18);
-    }
-
-    /* neon button */
-    .neon-btn{
-      position:relative;
-      display:inline-block;
-      padding:0.75rem 2rem;
-      border-radius:0.5rem;
-      font-weight:600;
-      letter-spacing:0.05em;
-      background:#7f5cff1a;
-      border:1px solid #7f5cff;
-      transition:box-shadow .3s,transform .3s;
-    }
-    .neon-btn::before{
-      content:'';
-      position:absolute;
-      inset:0;
-      border-radius:inherit;
-      box-shadow:0 0 8px #7f5cff,0 0 16px #7f5cff,0 0 24px #7f5cff;
-      opacity:.6;
-      z-index:-1;
-      transition:opacity .3s;
-    }
-    .neon-btn:hover{
-      transform:translateY(-2px);
-    }
-    .neon-btn:hover::before{
-      opacity:1;
-    }
-  </style>
+<style>
+@keyframes gradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+body{background:linear-gradient(-45deg,#0a0027,#15003c,#000c3d,#2f0078);background-size:400% 400%;animation:gradient 15s ease infinite;font-family:'Inter',sans-serif;color:#fff}
+h1{font-family:'Orbitron',sans-serif}
+.glass{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18)}
+.neon-btn{position:relative;display:inline-block;width:100%;padding:.75rem 2rem;border-radius:.5rem;font-weight:600;letter-spacing:.05em;background:#7f5cff1a;border:1px solid #7f5cff;transition:box-shadow .3s,transform .3s}
+.neon-btn:before{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 8px #7f5cff,0 0 16px #7f5cff,0 0 24px #7f5cff;opacity:.6;z-index:-1;transition:opacity .3s}
+.neon-btn:hover{transform:translateY(-2px)}.neon-btn:hover:before{opacity:1}
+input{background:transparent;border:1px solid rgba(255,255,255,.3);border-radius:.375rem;padding:.5rem 1rem;width:100%}
+label{font-size:.875rem;opacity:.9}
+</style>
 </head>
-<body class="min-h-screen flex items-center justify-center text-white">
+<body class="min-h-screen flex items-center justify-center">
 
-  <!-- LOGIN PANEL -->
-  <div id="loginScreen" class="glass p-8 rounded-xl w-full max-w-md">
-    <h1 class="text-3xl mb-6 text-center">WOLVER'S HUB</h1>
+<!-- LOGIN -->
+<div id="loginScreen" class="glass p-8 rounded-xl w-full max-w-md">
+  <h1 class="text-3xl mb-6 text-center">WOLVER'S HUB</h1>
+  <label class="block mb-2" for="pw">Enter Password</label>
+  <div class="relative mb-6">
+    <input id="pw" type="password" autocomplete="current-password" class="w-full bg-transparent border border-white/30 rounded px-4 py-2 pr-10 focus:outline-none">
+    <button id="togglePw" type="button" class="absolute right-3 top-1/2 -translate-y-1/2">
+      <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 5C5 5 2 12 2 12s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/><circle cx="12" cy="12" r="2.5"/></svg>
+      <svg id="eyeClosed" style="display:none" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M1 1l22 22-1.5 1.5L17.9 19C16 20.3 14 21 12 21c-7 0-10-7-10-7a17.7 17.7 0 013.6-4.6L2.5 2.5 1 1zm5.1 5.1A9.9 9.9 0 002 12s3 7 10 7c1.5 0 2.9-.4 4.2-1L12.7 14A5 5 0 017 9.3l-.9-3.2zM12 5c7 0 10 7 10 7-.3.7-.7 1.4-1.1 2l-1.5-1.5A10 10 0 0021 12s-3-7-10-7c-1 0-1.9.2-2.8.4L6.8 3.9A11.8 11.8 0 0112 5z"/></svg>
+    </button>
+  </div>
+  <button id="loginBtn" class="neon-btn">Unlock</button>
+</div>
 
-    <label class="block mb-2" for="pw">Enter Password</label>
-    <div class="relative mb-6">
-      <input id="pw" type="password" autocomplete="current-password"
-             class="w-full bg-transparent border border-white/30 rounded px-4 py-2 pr-10 focus:outline-none">
-      <button id="togglePw" type="button"
-              class="absolute inset-y-0 right-0 px-3 flex items-center select-none" tabindex="-1">
-        <!-- eye open -->
-        <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor"
-                d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/>
-          <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
-        </svg>
-        <!-- eye closed -->
-        <svg id="eyeClosed" style="display:none" xmlns="http://www.w3.org/2000/svg"
-             viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor"
-                d="M1 1l22 22-1.5 1.5L17.9 19C16 20.3 14 21 12 21c-7 0-10-7-10-7a17.7 17.7 0 013.6-4.6L2.5 2.5 1 1zm5.1 5.1A9.9 9.9 0 002 12s3 7 10 7c1.5 0 2.9-.4 4.2-1L12.7 14A5 5 0 017 9.3l-.9-3.2zM12 5c7 0 10 7 10 7-.3.7-.7 1.4-1.1 2l-1.5-1.5A10 10 0 0021 12s-3-7-10-7c-1 0-1.9.2-2.8.4L6.8 3.9A11.8 11.8 0 0112 5z"/>
-        </svg>
-      </button>
+<!-- MAIN -->
+<div id="mainScreen" class="glass p-8 rounded-xl w-full max-w-md hidden">
+  <h1 class="text-3xl mb-6 text-center">WOLVER'S HUB</h1>
+  <form id="payloadForm" class="space-y-4">
+    <div>
+      <label for="username">Competitor TikTok Username</label>
+      <input id="username" placeholder="e.g. islamabuauf">
     </div>
+    <div>
+      <label for="videoCount">Number of Videos</label>
+      <input id="videoCount" type="number" min="1" placeholder="60">
+    </div>
+    <div>
+      <label for="sheetId">Google Sheet ID</label>
+      <input id="sheetId" placeholder="1ZZ1Z6c1inO_75a2Tqdg...">
+    </div>
+    <button id="initBtn" type="button" class="neon-btn">Initiate Analysis</button>
+    <p id="status" class="text-center text-sm opacity-80 pt-2"></p>
+  </form>
+</div>
 
-    <button id="loginBtn" class="neon-btn w-full">Unlock</button>
-  </div>
+<script>
+(()=>{
 
-  <!-- MAIN PANEL -->
-  <div id="mainScreen" class="glass p-8 rounded-xl w-full max-w-md hidden">
-    <h1 class="text-3xl mb-6 text-center">WOLVER'S HUB</h1>
-    <p class="mb-4 text-center">You're now using Wolver's stuff. Be grateful and happy.</p>
+/* ---------- CONSTANTS ---------- */
+const PW_B64="Tm91cmE=";       // "Noura"
+const AUTH_COOKIE="wolverAuth";
+const LS_KEYS={username:'wolverUsername',videoCount:'wolverVideoCount',sheetId:'wolverSheetId'};
+const MAKE_WEBHOOK="https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky";
 
-    <button id="initBtn" class="neon-btn w-full">INITIATE</button>
-    <p id="status" class="mt-4 text-center text-sm opacity-80"></p>
-  </div>
+/* ---------- HELPERS ---------- */
+function setCookie(n,v,d){const t=new Date();t.setTime(t.getTime()+d*864e5);document.cookie=`${n}=${v};expires=${t.toUTCString()};path=/;SameSite=Strict;secure`}
+function getCookie(n){return document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith(n+'='))?.split('=')[1]||''}
 
-  <script>
-    (function(){
-      /* ---------- BASIC HELPERS ---------- */
-      const STORED_B64 = "Tm91cmE="; // "Noura" in Base64
-      const COOKIE = "wolverAuth";
+/* ---------- DOM ---------- */
+const qs=s=>document.querySelector(s);
+const loginScreen=qs('#loginScreen'),mainScreen=qs('#mainScreen');
+const pwInput=qs('#pw'),loginBtn=qs('#loginBtn'),togglePw=qs('#togglePw'),eyeOpen=qs('#eyeOpen'),eyeClosed=qs('#eyeClosed');
+const initBtn=qs('#initBtn'),statusEl=qs('#status');
+const usernameInput=qs('#username'),videoInput=qs('#videoCount'),sheetInput=qs('#sheetId');
 
-      function setCookie(name, value, days){
-        const d = new Date();
-        d.setTime(d.getTime() + days*24*60*60*1000);
-        document.cookie = `${name}=${value}; expires=${d.toUTCString()}; path=/; SameSite=Strict; secure`;
-      }
-      function getCookie(name){
-        return document.cookie.split(';').map(c=>c.trim())
-          .find(c=>c.startsWith(name+'='))?.split('=')[1];
-      }
+/* ---------- AUDIO ---------- */
+let ready=false,synth,err,click,fail;
+function initAudio(){if(ready)return;try{
+  synth=new Tone.Synth().toDestination();
+  err  =new Tone.Synth({oscillator:{type:"square"}}).toDestination();
+  click=new Tone.Synth({oscillator:{type:"triangle"},envelope:{decay:.05,release:.1}}).toDestination();
+  fail =new Tone.Synth({oscillator:{type:"sawtooth"}}).toDestination();
+  ready=true;
+}catch{}}
+function play(fn){if(!ready)return;Tone.start().then(fn);}
+const chime=()=>play(()=>['C5','E5','G5','C6'].forEach((n,i)=>synth.triggerAttackRelease(n,.15,"+"+i*.15)));
+const buzz =()=>play(()=>err.triggerAttackRelease("C2",.2));
+const clickSound=()=>play(()=>click.triggerAttackRelease("C6",.05));
+const sad  =()=>play(()=>['C4','G3','E3','C3'].forEach((n,i)=>fail.triggerAttackRelease(n,.2,"+"+i*.15)));
 
-      /* ---------- DOM NODES ---------- */
-      const loginScreen = document.getElementById('loginScreen');
-      const mainScreen  = document.getElementById('mainScreen');
-      const pwInput     = document.getElementById('pw');
-      const loginBtn    = document.getElementById('loginBtn');
-      const togglePw    = document.getElementById('togglePw');
-      const eyeOpen     = document.getElementById('eyeOpen');
-      const eyeClosed   = document.getElementById('eyeClosed');
-      const initBtn     = document.getElementById('initBtn');
-      const statusEl    = document.getElementById('status');
+/* ---------- INITIAL STATE ---------- */
+if(getCookie(AUTH_COOKIE)==='1'){loginScreen.classList.add('hidden');mainScreen.classList.remove('hidden');}
+Object.entries(LS_KEYS).forEach(([field,key])=>{const v=localStorage.getItem(key);if(v) qs('#'+field).value=v});
 
-      /* ---------- AUDIO ---------- */
-      let audioReady = false;
-      let synth, errSynth, clickSynth, failSynth;
+/* ---------- PASSWORD ---------- */
+togglePw.addEventListener('click',()=>{const show=pwInput.type==='text';pwInput.type=show?'password':'text';eyeOpen.style.display=show?'block':'none';eyeClosed.style.display=show?'none':'block'});
+loginBtn.addEventListener('click',()=>{initAudio();if(btoa(pwInput.value)===PW_B64){chime();setCookie(AUTH_COOKIE,'1',7);loginScreen.classList.add('hidden');mainScreen.classList.remove('hidden')}else{buzz()}});
 
-      function initAudio(){
-        if(audioReady) return;
-        try{
-          synth      = new Tone.Synth().toDestination();
-          errSynth   = new Tone.Synth({oscillator:{type:"square"}}).toDestination();
-          clickSynth = new Tone.Synth({oscillator:{type:"triangle"}, envelope:{decay:0.05, release:0.1}}).toDestination();
-          failSynth  = new Tone.Synth({oscillator:{type:"sawtooth"}}).toDestination();
-          audioReady = true;
-        }catch(e){
-          audioReady = false;
-        }
-      }
-      function play(fn){
-        if(!audioReady) return;
-        Tone.start().then(fn);
-      }
-      function chime(){
-        play(()=>['C5','E5','G5','C6'].forEach((n,i)=>synth.triggerAttackRelease(n,0.15,"+"+i*0.15)));
-      }
-      function errorBuzz(){
-        play(()=>errSynth.triggerAttackRelease("C2",0.2));
-      }
-      function clickSound(){
-        play(()=>clickSynth.triggerAttackRelease("C6",0.05));
-      }
-      function failTone(){
-        play(()=>['C4','G3','E3','C3'].forEach((n,i)=>failSynth.triggerAttackRelease(n,0.2,"+"+i*0.15)));
-      }
+/* ---------- INITIATE ---------- */
+initBtn.addEventListener('click',async()=>{
+  initAudio();clickSound();
+  const username=usernameInput.value.trim();
+  const videoCount=+videoInput.value||0;
+  const sheetId=sheetInput.value.trim();
+  if(!username||!videoCount||!sheetId){buzz();statusEl.textContent='Fill all fields.';return;}
 
-      /* ---------- VIEW SWITCH ---------- */
-      function showMain(){
-        loginScreen.classList.add('hidden');
-        mainScreen.classList.remove('hidden');
-      }
-      if(getCookie(COOKIE)==='1'){ showMain(); }
+  /* persist */
+  localStorage.setItem(LS_KEYS.username,username);
+  localStorage.setItem(LS_KEYS.videoCount,videoCount);
+  localStorage.setItem(LS_KEYS.sheetId,sheetId);
 
-      /* ---------- PASSWORD TOGGLE ---------- */
-      togglePw.addEventListener('click', ()=>{
-        const showing = pwInput.type === 'text';
-        pwInput.type  = showing ? 'password' : 'text';
-        eyeOpen.style.display   = showing ? 'block' : 'none';
-        eyeClosed.style.display = showing ? 'none'  : 'block';
-      });
+  try{
+    statusEl.textContent='Generating return channel…';
+    /* create temporary token */
+    const tokRes=await fetch('https://webhook.site/token',{method:'POST'});
+    if(!tokRes.ok) throw new Error('token');
+    const tok=await tokRes.json();
+    const uuid=tok.uuid;
+    const returnUrl=`https://webhook.site/${uuid}`;
+    const streamUrl=`https://webhook.site/token/${uuid}/stream`;
 
-      /* ---------- LOGIN ---------- */
-      loginBtn.addEventListener('click', ()=>{
-        initAudio();
-        if(btoa(pwInput.value) === STORED_B64){
+    statusEl.textContent='Waiting for result…';
+
+    /* listen for callback */
+    const es=new EventSource(streamUrl);
+    es.addEventListener('message',e=>{
+      try{
+        const outer=JSON.parse(e.data);
+        const inner=outer.content?JSON.parse(outer.content):outer.data||{};
+        const gDoc=inner.googleDocUrl||inner.webViewLink||inner.docUrl;
+        if(gDoc){
           chime();
-          setCookie(COOKIE,'1',7);
-          showMain();
-        }else{
-          errorBuzz();
+          statusEl.innerHTML=`Success – <a href="${gDoc}" target="_blank" class="underline">Open document</a>`;
+          es.close();
         }
-      });
+      }catch{}
+    });
 
-      /* ---------- WEBHOOK ---------- */
-      initBtn.addEventListener('click', ()=>{
-        initAudio();
-        clickSound();
-        statusEl.textContent = 'Sending…';
-        fetch('https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky',{
-          method : 'POST',
-          headers: {'Content-Type':'application/json'},
-          body   : JSON.stringify({THEMAGICWORD:'run'})
-        })
-        .then(r=>{
-          if(r.ok){
-            chime();
-            statusEl.textContent = 'Success!';
-          }else{
-            failTone();
-            statusEl.textContent = `Failed (${r.status})`;
-          }
-        })
-        .catch(()=>{
-          failTone();
-          statusEl.textContent = 'Error';
-        });
-      });
-    })();
-  </script>
+    /* trigger Make.com */
+    await fetch(MAKE_WEBHOOK,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({THEMAGICWORD:'run',username,videoCount,sheetId,returnUrl})
+    }).catch(()=>{});
+
+  }catch(err){
+    sad();statusEl.textContent='Error starting automation';
+  }
+});
+})();
+</script>
 </body>
 </html>
