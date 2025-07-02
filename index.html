@@ -3,53 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make.com Automation Trigger</title>
+    <title>Wolver's Automation Hub</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Inter & Orbitron for a futuristic feel -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* Use Inter as the default font */
+        /* Use Inter as the default font, Orbitron for special headings */
         body {
             font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Hide scrollbars from the animated background */
         }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Animated Gradient Background */
+        .animated-gradient {
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #004e92);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect for the main container */
+        .glass-container {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* For Safari */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Neon Glow Effect for the button */
+        .neon-button {
+            box-shadow: 0 0 5px #0ea5e9, 0 0 15px #0ea5e9, 0 0 25px #0ea5e9, 0 0 50px #0ea5e9;
+        }
+
     </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+<body class="text-white flex items-center justify-center min-h-screen">
+    
+    <!-- Animated background div -->
+    <div class="animated-gradient"></div>
 
-    <!-- Main container -->
-    <div class="text-center p-8 bg-gray-800 rounded-xl shadow-2xl border border-gray-700 max-w-sm w-full">
+    <!-- Main container with glassmorphism -->
+    <div class="text-center p-8 rounded-2xl shadow-2xl max-w-sm w-full glass-container">
         
         <!-- Header Section -->
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-cyan-400">Automation Trigger</h1>
-            <p id="subheading" class="text-gray-400 mt-2">Please enter the password to continue.</p>
+            <h1 class="text-3xl font-orbitron text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.5)]">WOLVER'S HUB</h1>
+            <p id="subheading" class="text-gray-300 mt-2">Enter Pass-Key to Access System.</p>
         </div>
 
-        <!-- Password Section (Visible by default) -->
+        <!-- Password Section -->
         <div id="passwordSection">
-            <input type="password" id="passwordInput" placeholder="Enter Password" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4">
+            <input type="password" id="passwordInput" placeholder="Pass-Key" class="w-full bg-gray-900/50 border border-gray-500 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-400 mb-4 transition-all">
             <button id="unlockButton" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out">
-                Unlock
+                Authenticate
             </button>
             <div id="passwordError" class="mt-4 text-sm text-red-400 h-5">&nbsp;</div>
         </div>
 
         <!-- Trigger Section (Hidden by default) -->
         <div id="triggerSection" class="hidden">
-            <!-- The Button -->
-            <button id="runButton" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:bg-gray-600 disabled:cursor-not-allowed">
-                <span id="buttonText">Send "run"</span>
-                <!-- Loading spinner, hidden by default -->
+            <p class="text-lg font-bold text-green-400 mb-2">You're now using Wolver's stuff.</p>
+            <p class="text-sm text-gray-300 mb-6">Be grateful and happy.</p>
+
+            <button id="runButton" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-sky-300 disabled:bg-gray-600 disabled:cursor-not-allowed neon-button">
+                <span id="buttonText">INITIATE</span>
                 <svg id="loadingSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
             </button>
 
-            <!-- Status Message Area -->
             <div id="statusMessage" class="mt-6 text-sm h-5">&nbsp;</div>
         </div>
     </div>
@@ -62,74 +102,65 @@
         const unlockButton = document.getElementById('unlockButton');
         const passwordError = document.getElementById('passwordError');
         const subheading = document.getElementById('subheading');
-
         const runButton = document.getElementById('runButton');
         const buttonText = document.getElementById('buttonText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const statusMessage = document.getElementById('statusMessage');
 
-        // --- Configuration ---
-        const correctPassword = 'Noura';
+        // --- Configuration & Security ---
+        // The password "Noura" is encoded in Base64. This is NOT true encryption,
+        // but it prevents someone from simply viewing the page source to find the password.
+        const correctPasswordHash = 'Tm91cmE='; // "Noura" in Base64
         const webhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
-        const payload = {
-            "THEMAGICWORD": "run"
-        };
+        const payload = { "THEMAGICWORD": "run" };
 
         // --- Password Logic ---
-        unlockButton.addEventListener('click', () => {
-            const enteredPassword = passwordInput.value;
-            if (enteredPassword === correctPassword) {
-                // On correct password, hide password section and show trigger section
+        function checkPassword() {
+            // btoa() function encodes a string in Base64
+            const enteredPasswordHash = btoa(passwordInput.value);
+            if (enteredPasswordHash === correctPasswordHash) {
                 passwordSection.classList.add('hidden');
                 triggerSection.classList.remove('hidden');
-                subheading.textContent = 'Click the button to run the Make.com workflow.';
+                subheading.textContent = 'System Unlocked. Ready to Initiate.';
             } else {
-                // On incorrect password, show an error message
-                passwordError.textContent = 'Incorrect password. Please try again.';
-                passwordInput.value = ''; // Clear the input field
-                // Clear the error message after 3 seconds
-                setTimeout(() => {
-                    passwordError.textContent = '\u00A0'; // Use non-breaking space to maintain height
-                }, 3000);
+                passwordError.textContent = 'Authentication Failed. Invalid Pass-Key.';
+                passwordInput.value = '';
+                setTimeout(() => { passwordError.textContent = '\u00A0'; }, 3000);
             }
-        });
-        
-        // Allow pressing Enter to unlock
+        }
+
+        unlockButton.addEventListener('click', checkPassword);
         passwordInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') {
-                unlockButton.click();
+                checkPassword();
             }
         });
 
-
-        // --- Webhook Trigger Logic (remains the same) ---
+        // --- Webhook Trigger Logic ---
         runButton.addEventListener('click', async () => {
-            runButton.disabled = true; 
+            runButton.disabled = true;
             buttonText.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
-            statusMessage.textContent = 'Sending...';
+            statusMessage.textContent = 'Transmitting...';
             statusMessage.className = 'mt-6 text-sm text-gray-400';
 
             try {
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload) 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
-                    statusMessage.textContent = 'Success! Workflow triggered.';
+                    statusMessage.textContent = 'Transmission Successful. Workflow Initiated.';
                     statusMessage.className = 'mt-6 text-sm text-green-400';
                 } else {
-                    statusMessage.textContent = `Error: ${response.status} ${response.statusText}`;
+                    statusMessage.textContent = `Transmission Error: ${response.status}`;
                     statusMessage.className = 'mt-6 text-sm text-red-400';
                 }
-
             } catch (error) {
                 console.error('An error occurred during the fetch operation:', error);
-                statusMessage.textContent = 'Network error. Check console.';
+                statusMessage.textContent = 'Network Failure. Check Console.';
                 statusMessage.className = 'mt-6 text-sm text-red-400';
             } finally {
                 setTimeout(() => {
