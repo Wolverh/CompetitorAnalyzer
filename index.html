@@ -6,6 +6,8 @@
     <title>Wolver's Automation Hub</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
     <!-- Google Fonts: Inter & Orbitron for a futuristic feel -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,22 +109,55 @@
         const loadingSpinner = document.getElementById('loadingSpinner');
         const statusMessage = document.getElementById('statusMessage');
 
+        // --- Sound Synthesis Setup (Tone.js) ---
+        // Create a synth that we can reuse for all sound effects
+        const synth = new Tone.Synth().toDestination();
+        let audioStarted = false;
+
+        // Function to play a sound for incorrect password
+        function playErrorSound() {
+            synth.triggerAttackRelease("C2", "8n");
+        }
+        // Function to play a sound for correct password
+        function playSuccessSound() {
+            synth.triggerAttackRelease("C4", "16n", Tone.now());
+            synth.triggerAttackRelease("E4", "16n", Tone.now() + 0.1);
+            synth.triggerAttackRelease("G4", "16n", Tone.now() + 0.2);
+        }
+        // Function to play a simple click sound
+        function playClickSound() {
+            synth.triggerAttackRelease("C5", "32n");
+        }
+        // Function to play a sound for a failed transmission
+        function playFailureSound() {
+            synth.triggerAttackRelease("G2", "16n", Tone.now());
+            synth.triggerAttackRelease("E2", "16n", Tone.now() + 0.1);
+            synth.triggerAttackRelease("C2", "16n", Tone.now() + 0.2);
+        }
+
         // --- Configuration & Security ---
-        // The password "Noura" is encoded in Base64. This is NOT true encryption,
-        // but it prevents someone from simply viewing the page source to find the password.
         const correctPasswordHash = 'Tm91cmE='; // "Noura" in Base64
         const webhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
         const payload = { "THEMAGICWORD": "run" };
 
         // --- Password Logic ---
-        function checkPassword() {
-            // btoa() function encodes a string in Base64
+        async function checkPassword() {
+            // The Web Audio API requires a user gesture to start.
+            // We start it on the first click.
+            if (!audioStarted) {
+                await Tone.start();
+                audioStarted = true;
+                console.log('Audio context started.');
+            }
+
             const enteredPasswordHash = btoa(passwordInput.value);
             if (enteredPasswordHash === correctPasswordHash) {
+                playSuccessSound();
                 passwordSection.classList.add('hidden');
                 triggerSection.classList.remove('hidden');
                 subheading.textContent = 'System Unlocked. Ready to Initiate.';
             } else {
+                playErrorSound();
                 passwordError.textContent = 'Authentication Failed. Invalid Pass-Key.';
                 passwordInput.value = '';
                 setTimeout(() => { passwordError.textContent = '\u00A0'; }, 3000);
@@ -138,6 +173,7 @@
 
         // --- Webhook Trigger Logic ---
         runButton.addEventListener('click', async () => {
+            playClickSound(); // Play click sound on interaction
             runButton.disabled = true;
             buttonText.classList.add('hidden');
             loadingSpinner.classList.remove('hidden');
@@ -152,13 +188,16 @@
                 });
 
                 if (response.ok) {
+                    playSuccessSound(); // Play success sound on successful transmission
                     statusMessage.textContent = 'Transmission Successful. Workflow Initiated.';
                     statusMessage.className = 'mt-6 text-sm text-green-400';
                 } else {
+                    playFailureSound(); // Play failure sound on error
                     statusMessage.textContent = `Transmission Error: ${response.status}`;
                     statusMessage.className = 'mt-6 text-sm text-red-400';
                 }
             } catch (error) {
+                playFailureSound(); // Play failure sound on network error
                 console.error('An error occurred during the fetch operation:', error);
                 statusMessage.textContent = 'Network Failure. Check Console.';
                 statusMessage.className = 'mt-6 text-sm text-red-400';
