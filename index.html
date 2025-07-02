@@ -72,7 +72,19 @@
 
         <!-- Password Section -->
         <div id="passwordSection">
-            <input type="password" id="passwordInput" placeholder="Pass-Key" class="w-full bg-gray-900/50 border border-gray-500 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-400 mb-4 transition-all">
+            <!-- Container for input and show/hide button -->
+            <div class="relative w-full mb-4">
+                <input type="password" id="passwordInput" placeholder="Pass-Key" class="w-full bg-gray-900/50 border border-gray-500 text-white rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all">
+                <button id="togglePassword" type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-cyan-300" aria-label="Toggle password visibility">
+                    <svg id="eyeIcon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <svg id="eyeOffIcon" class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L6.228 6.228" />
+                    </svg>
+                </button>
+            </div>
             <button id="unlockButton" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out">
                 Authenticate
             </button>
@@ -108,21 +120,28 @@
         const buttonText = document.getElementById('buttonText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const statusMessage = document.getElementById('statusMessage');
+        const togglePassword = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const eyeOffIcon = document.getElementById('eyeOffIcon');
 
         // --- Sound Synthesis Setup (Tone.js) ---
         const synth = new Tone.Synth().toDestination();
         let audioStarted = false;
-        function playErrorSound() { synth.triggerAttackRelease("C2", "8n"); }
+        function playErrorSound() { if(audioStarted) synth.triggerAttackRelease("C2", "8n"); }
         function playSuccessSound() {
-            synth.triggerAttackRelease("C4", "16n", Tone.now());
-            synth.triggerAttackRelease("E4", "16n", Tone.now() + 0.1);
-            synth.triggerAttackRelease("G4", "16n", Tone.now() + 0.2);
+            if(audioStarted) {
+                synth.triggerAttackRelease("C4", "16n", Tone.now());
+                synth.triggerAttackRelease("E4", "16n", Tone.now() + 0.1);
+                synth.triggerAttackRelease("G4", "16n", Tone.now() + 0.2);
+            }
         }
-        function playClickSound() { synth.triggerAttackRelease("C5", "32n"); }
+        function playClickSound() { if(audioStarted) synth.triggerAttackRelease("C5", "32n"); }
         function playFailureSound() {
-            synth.triggerAttackRelease("G2", "16n", Tone.now());
-            synth.triggerAttackRelease("E2", "16n", Tone.now() + 0.1);
-            synth.triggerAttackRelease("C2", "16n", Tone.now() + 0.2);
+            if(audioStarted) {
+                synth.triggerAttackRelease("G2", "16n", Tone.now());
+                synth.triggerAttackRelease("E2", "16n", Tone.now() + 0.1);
+                synth.triggerAttackRelease("C2", "16n", Tone.now() + 0.2);
+            }
         }
 
         // --- Configuration & Security ---
@@ -138,7 +157,6 @@
                 date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                 expires = "; expires=" + date.toUTCString();
             }
-            // Set cookie with SameSite=Lax for security
             document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax";
         }
 
@@ -155,16 +173,21 @@
 
         // --- Password Logic ---
         async function checkPassword() {
+            // FIX: Wrap audio start in a try/catch to prevent it from blocking the login
             if (!audioStarted) {
-                await Tone.start();
-                audioStarted = true;
-                console.log('Audio context started.');
+                try {
+                    await Tone.start();
+                    audioStarted = true;
+                    console.log('Audio context started.');
+                } catch (e) {
+                    console.error("Could not start audio context:", e);
+                    // The app can continue without audio if it fails
+                }
             }
 
             const enteredPasswordHash = btoa(passwordInput.value);
             if (enteredPasswordHash === correctPasswordHash) {
                 playSuccessSound();
-                // Set a cookie for 7 days on successful login
                 setCookie('wolverAuth', 'true', 7);
                 passwordSection.classList.add('hidden');
                 triggerSection.classList.remove('hidden');
@@ -182,6 +205,14 @@
             if (event.key === 'Enter') {
                 checkPassword();
             }
+        });
+
+        // NEW: Event listener for the show/hide password button
+        togglePassword.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeIcon.classList.toggle('hidden', isPassword);
+            eyeOffIcon.classList.toggle('hidden', !isPassword);
         });
 
         // --- Webhook Trigger Logic ---
@@ -224,7 +255,6 @@
         });
 
         // --- Page Load Logic (Check for Cookie) ---
-        // This runs as soon as the page is loaded
         window.onload = function() {
             if (getCookie('wolverAuth') === 'true') {
                 console.log('User is already authenticated via cookie.');
