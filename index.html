@@ -3,269 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolver's Automation Hub</title>
-    <!-- Tailwind CSS for styling -->
+    <title>Wolver's Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tone.js for sound effects -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
-    <!-- Google Fonts: Inter & Orbitron for a futuristic feel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Use Inter as the default font, Orbitron for special headings */
         body {
             font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Hide scrollbars from the animated background */
-        }
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        /* Animated Gradient Background */
-        .animated-gradient {
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #004e92);
+            background: linear-gradient(-45deg, #0f0f23, #1a0033, #2d1b69, #0a0a0a);
             background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
-            height: 100vh;
-            width: 100vw;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
         }
 
-        @keyframes gradient {
+        @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
-        /* Glassmorphism Effect for the main container */
         .glass-container {
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px); /* For Safari */
             border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        /* Neon Glow Effect for the button */
-        .neon-button {
-            box-shadow: 0 0 5px #0ea5e9, 0 0 15px #0ea5e9, 0 0 25px #0ea5e9, 0 0 50px #0ea5e9;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
         }
 
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.5), 0 0 40px rgba(147, 51, 234, 0.3), 0 0 60px rgba(147, 51, 234, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .neon-glow:hover {
+            box-shadow: 0 0 30px rgba(147, 51, 234, 0.8), 0 0 60px rgba(147, 51, 234, 0.5), 0 0 90px rgba(147, 51, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .orbitron {
+            font-family: 'Orbitron', monospace;
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from { text-shadow: 0 0 20px rgba(147, 51, 234, 0.5); }
+            to { text-shadow: 0 0 30px rgba(147, 51, 234, 0.8), 0 0 40px rgba(147, 51, 234, 0.3); }
+        }
+
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .success-flash {
+            animation: successFlash 0.5s ease-in-out;
+        }
+
+        @keyframes successFlash {
+            0%, 100% { background-color: rgba(34, 197, 94, 0.1); }
+            50% { background-color: rgba(34, 197, 94, 0.3); }
+        }
+
+        .error-flash {
+            animation: errorFlash 0.5s ease-in-out;
+        }
+
+        @keyframes errorFlash {
+            0%, 100% { background-color: rgba(239, 68, 68, 0.1); }
+            50% { background-color: rgba(239, 68, 68, 0.3); }
+        }
     </style>
 </head>
-<body class="text-white flex items-center justify-center min-h-screen">
-    
-    <!-- Animated background div -->
-    <div class="animated-gradient"></div>
-
-    <!-- Main container with glassmorphism -->
-    <div class="text-center p-8 rounded-2xl shadow-2xl max-w-sm w-full glass-container">
-        
-        <!-- Header Section -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-orbitron text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.5)]">WOLVER'S HUB</h1>
-            <p id="subheading" class="text-gray-300 mt-2">Enter Pass-Key to Access System.</p>
-        </div>
-
-        <!-- Password Section -->
-        <div id="passwordSection">
-            <!-- Container for input and show/hide button -->
-            <div class="relative w-full mb-4">
-                <input type="password" id="passwordInput" placeholder="Pass-Key" class="w-full bg-gray-900/50 border border-gray-500 text-white rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all">
-                <button id="togglePassword" type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-cyan-300" aria-label="Toggle password visibility">
-                    <svg id="eyeIcon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <svg id="eyeOffIcon" class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L6.228 6.228" />
-                    </svg>
-                </button>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="glass-container rounded-2xl p-8 w-full max-w-md">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="text-center">
+            <h1 class="orbitron text-4xl font-black text-white mb-8 pulse-glow">WOLVER'S HUB</h1>
+            
+            <div class="mb-6">
+                <div class="relative">
+                    <input 
+                        type="password" 
+                        id="passwordInput" 
+                        placeholder="Enter access code..." 
+                        class="w-full px-4 py-3 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-300"
+                        autocomplete="off"
+                    >
+                    <button 
+                        type="button" 
+                        id="togglePassword" 
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200"
+                    >
+                        <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="errorMessage" class="text-red-400 text-sm mt-2 opacity-0 transition-opacity duration-300"></div>
             </div>
-            <button id="unlockButton" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out">
-                Authenticate
+            
+            <button 
+                id="loginButton" 
+                class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+            >
+                ACCESS SYSTEM
             </button>
-            <div id="passwordError" class="mt-4 text-sm text-red-400 h-5">&nbsp;</div>
         </div>
 
-        <!-- Trigger Section (Hidden by default) -->
-        <div id="triggerSection" class="hidden">
-            <p class="text-lg font-bold text-green-400 mb-2">You're now using Wolver's stuff.</p>
-            <p class="text-sm text-gray-300 mb-6">Be grateful and happy.</p>
-
-            <button id="runButton" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-sky-300 disabled:bg-gray-600 disabled:cursor-not-allowed neon-button">
+        <!-- Main Interface -->
+        <div id="mainInterface" class="text-center hidden">
+            <h1 class="orbitron text-4xl font-black text-white mb-4 pulse-glow">WOLVER'S HUB</h1>
+            <p class="text-gray-300 mb-8 text-lg">You're now using Wolver's stuff. Be grateful and happy.</p>
+            
+            <button 
+                id="initiateButton" 
+                class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 px-8 rounded-lg neon-glow orbitron text-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
                 <span id="buttonText">INITIATE</span>
-                <svg id="loadingSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
             </button>
-
-            <div id="statusMessage" class="mt-6 text-sm h-5">&nbsp;</div>
+            
+            <div id="statusMessage" class="mt-4 text-sm opacity-0 transition-all duration-300"></div>
+            
+            <button 
+                id="logoutButton" 
+                class="mt-6 text-gray-400 hover:text-white text-sm transition-colors duration-200 underline"
+            >
+                Logout
+            </button>
         </div>
     </div>
 
     <script>
-        // --- Element References ---
-        const passwordSection = document.getElementById('passwordSection');
-        const triggerSection = document.getElementById('triggerSection');
-        const passwordInput = document.getElementById('passwordInput');
-        const unlockButton = document.getElementById('unlockButton');
-        const passwordError = document.getElementById('passwordError');
-        const subheading = document.getElementById('subheading');
-        const runButton = document.getElementById('runButton');
-        const buttonText = document.getElementById('buttonText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const statusMessage = document.getElementById('statusMessage');
-        const togglePassword = document.getElementById('togglePassword');
-        const eyeIcon = document.getElementById('eyeIcon');
-        const eyeOffIcon = document.getElementById('eyeOffIcon');
-
-        // --- Sound Synthesis Setup (Tone.js) ---
-        const synth = new Tone.Synth().toDestination();
-        let audioStarted = false;
-        function playErrorSound() { if(audioStarted) synth.triggerAttackRelease("C2", "8n"); }
-        function playSuccessSound() {
-            if(audioStarted) {
-                synth.triggerAttackRelease("C4", "16n", Tone.now());
-                synth.triggerAttackRelease("E4", "16n", Tone.now() + 0.1);
-                synth.triggerAttackRelease("G4", "16n", Tone.now() + 0.2);
+        // Audio system with Tone.js
+        class AudioManager {
+            constructor() {
+                this.isInitialized = false;
+                this.initAudio();
             }
-        }
-        function playClickSound() { if(audioStarted) synth.triggerAttackRelease("C5", "32n"); }
-        function playFailureSound() {
-            if(audioStarted) {
-                synth.triggerAttackRelease("G2", "16n", Tone.now());
-                synth.triggerAttackRelease("E2", "16n", Tone.now() + 0.1);
-                synth.triggerAttackRelease("C2", "16n", Tone.now() + 0.2);
-            }
-        }
 
-        // --- Configuration & Security ---
-        const correctPasswordHash = 'Tm91cmE='; // "Noura" in Base64
-        const webhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
-        const payload = { "THEMAGICWORD": "run" };
-
-        // --- Cookie Helper Functions ---
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                const date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax";
-        }
-
-        function getCookie(name) {
-            const nameEQ = name + "=";
-            const ca = document.cookie.split(';');
-            for(let i=0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-            }
-            return null;
-        }
-
-        // --- Password Logic ---
-        async function checkPassword() {
-            // FIX: Wrap audio start in a try/catch to prevent it from blocking the login
-            if (!audioStarted) {
+            async initAudio() {
                 try {
                     await Tone.start();
-                    audioStarted = true;
-                    console.log('Audio context started.');
-                } catch (e) {
-                    console.error("Could not start audio context:", e);
-                    // The app can continue without audio if it fails
+                    this.isInitialized = true;
+                    console.log('Audio context initialized');
+                } catch (error) {
+                    console.warn('Audio initialization failed:', error);
+                    this.isInitialized = false;
                 }
             }
 
-            const enteredPasswordHash = btoa(passwordInput.value);
-            if (enteredPasswordHash === correctPasswordHash) {
-                playSuccessSound();
-                setCookie('wolverAuth', 'true', 7);
-                passwordSection.classList.add('hidden');
-                triggerSection.classList.remove('hidden');
-                subheading.textContent = 'System Unlocked. Ready to Initiate.';
-            } else {
-                playErrorSound();
-                passwordError.textContent = 'Authentication Failed. Invalid Pass-Key.';
-                passwordInput.value = '';
-                setTimeout(() => { passwordError.textContent = '\u00A0'; }, 3000);
+            playErrorSound() {
+                if (!this.isInitialized) return;
+                try {
+                    const synth = new Tone.Synth().toDestination();
+                    synth.triggerAttackRelease("C2", "0.2");
+                } catch (error) {
+                    console.warn('Error playing sound:', error);
+                }
+            }
+
+            playSuccessSound() {
+                if (!this.isInitialized) return;
+                try {
+                    const synth = new Tone.Synth().toDestination();
+                    synth.triggerAttackRelease("C4", "0.1");
+                    setTimeout(() => synth.triggerAttackRelease("E4", "0.1"), 100);
+                    setTimeout(() => synth.triggerAttackRelease("G4", "0.2"), 200);
+                } catch (error) {
+                    console.warn('Error playing sound:', error);
+                }
+            }
+
+            playClickSound() {
+                if (!this.isInitialized) return;
+                try {
+                    const synth = new Tone.Synth().toDestination();
+                    synth.triggerAttackRelease("G5", "0.05");
+                } catch (error) {
+                    console.warn('Error playing sound:', error);
+                }
+            }
+
+            playFailureSound() {
+                if (!this.isInitialized) return;
+                try {
+                    const synth = new Tone.Synth().toDestination();
+                    synth.triggerAttackRelease("C3", "0.1");
+                    setTimeout(() => synth.triggerAttackRelease("A2", "0.1"), 100);
+                    setTimeout(() => synth.triggerAttackRelease("F2", "0.2"), 200);
+                } catch (error) {
+                    console.warn('Error playing sound:', error);
+                }
             }
         }
 
-        unlockButton.addEventListener('click', checkPassword);
-        passwordInput.addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-                checkPassword();
+        // Initialize audio manager
+        const audioManager = new AudioManager();
+
+        // Authentication system
+        class AuthSystem {
+            constructor() {
+                // Base64 encoded "Noura"
+                this.correctPasswordHash = btoa("Noura");
+                this.cookieName = "wolverAuth";
+                this.cookieExpireDays = 7;
+            }
+
+            setCookie(name, value, days) {
+                const expires = new Date();
+                expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+            }
+
+            getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            deleteCookie(name) {
+                document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            }
+
+            validatePassword(inputPassword) {
+                const inputHash = btoa(inputPassword);
+                return inputHash === this.correctPasswordHash;
+            }
+
+            isAuthenticated() {
+                const cookie = this.getCookie(this.cookieName);
+                return cookie === this.correctPasswordHash;
+            }
+
+            login(password) {
+                if (this.validatePassword(password)) {
+                    this.setCookie(this.cookieName, this.correctPasswordHash, this.cookieExpireDays);
+                    return true;
+                }
+                return false;
+            }
+
+            logout() {
+                this.deleteCookie(this.cookieName);
+            }
+        }
+
+        // Initialize auth system
+        const authSystem = new AuthSystem();
+
+        // UI elements
+        const loginScreen = document.getElementById('loginScreen');
+        const mainInterface = document.getElementById('mainInterface');
+        const passwordInput = document.getElementById('passwordInput');
+        const togglePassword = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const loginButton = document.getElementById('loginButton');
+        const errorMessage = document.getElementById('errorMessage');
+        const initiateButton = document.getElementById('initiateButton');
+        const buttonText = document.getElementById('buttonText');
+        const statusMessage = document.getElementById('statusMessage');
+        const logoutButton = document.getElementById('logoutButton');
+
+        // Password visibility toggle
+        let passwordVisible = false;
+        togglePassword.addEventListener('click', () => {
+            passwordVisible = !passwordVisible;
+            passwordInput.type = passwordVisible ? 'text' : 'password';
+            
+            if (passwordVisible) {
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M9.878 9.878l-1.415-1.414M14.121 14.121l1.415 1.415M14.121 14.121l1.414 1.414M14.121 14.121L18.536 18.536"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path>
+                `;
+            } else {
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                `;
             }
         });
 
-        // NEW: Event listener for the show/hide password button
-        togglePassword.addEventListener('click', () => {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            eyeIcon.classList.toggle('hidden', isPassword);
-            eyeOffIcon.classList.toggle('hidden', !isPassword);
+        // Login functionality
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.opacity = '1';
+            loginScreen.classList.add('error-flash');
+            setTimeout(() => loginScreen.classList.remove('error-flash'), 500);
+            audioManager.playErrorSound();
+        }
+
+        function hideError() {
+            errorMessage.style.opacity = '0';
+        }
+
+        function showMainInterface() {
+            loginScreen.classList.add('hidden');
+            mainInterface.classList.remove('hidden');
+            mainInterface.classList.add('success-flash');
+            setTimeout(() => mainInterface.classList.remove('success-flash'), 500);
+            audioManager.playSuccessSound();
+        }
+
+        function showLoginScreen() {
+            mainInterface.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            passwordInput.value = '';
+            hideError();
+        }
+
+        // Login event handlers
+        loginButton.addEventListener('click', () => {
+            const password = passwordInput.value.trim();
+            
+            if (!password) {
+                showError('Please enter the access code');
+                return;
+            }
+
+            if (authSystem.login(password)) {
+                showMainInterface();
+            } else {
+                showError('Invalid access code');
+                passwordInput.value = '';
+            }
         });
 
-        // --- Webhook Trigger Logic ---
-        runButton.addEventListener('click', async () => {
-            playClickSound();
-            runButton.disabled = true;
-            buttonText.classList.add('hidden');
-            loadingSpinner.classList.remove('hidden');
-            statusMessage.textContent = 'Transmitting...';
-            statusMessage.className = 'mt-6 text-sm text-gray-400';
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginButton.click();
+            }
+            hideError();
+        });
+
+        // Logout functionality
+        logoutButton.addEventListener('click', () => {
+            authSystem.logout();
+            showLoginScreen();
+        });
+
+        // Webhook functionality
+        async function triggerWebhook() {
+            const webhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
+            const payload = { "THEMAGICWORD": "run" };
 
             try {
+                initiateButton.disabled = true;
+                initiateButton.classList.add('loading');
+                buttonText.textContent = 'PROCESSING...';
+                
+                showStatus('Initiating sequence...', 'text-blue-400');
+
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
-                    playSuccessSound();
-                    statusMessage.textContent = 'Transmission Successful. Workflow Initiated.';
-                    statusMessage.className = 'mt-6 text-sm text-green-400';
+                    showStatus('Sequence initiated successfully!', 'text-green-400');
+                    mainInterface.classList.add('success-flash');
+                    setTimeout(() => mainInterface.classList.remove('success-flash'), 500);
+                    audioManager.playSuccessSound();
                 } else {
-                    playFailureSound();
-                    statusMessage.textContent = `Transmission Error: ${response.status}`;
-                    statusMessage.className = 'mt-6 text-sm text-red-400';
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
+
             } catch (error) {
-                playFailureSound();
-                console.error('An error occurred during the fetch operation:', error);
-                statusMessage.textContent = 'Network Failure. Check Console.';
-                statusMessage.className = 'mt-6 text-sm text-red-400';
+                console.error('Webhook error:', error);
+                showStatus('Sequence failed. Please try again.', 'text-red-400');
+                mainInterface.classList.add('error-flash');
+                setTimeout(() => mainInterface.classList.remove('error-flash'), 500);
+                audioManager.playFailureSound();
             } finally {
+                initiateButton.disabled = false;
+                initiateButton.classList.remove('loading');
+                buttonText.textContent = 'INITIATE';
+                
                 setTimeout(() => {
-                    runButton.disabled = false;
-                    buttonText.classList.remove('hidden');
-                    loadingSpinner.classList.add('hidden');
-                }, 2000);
+                    statusMessage.style.opacity = '0';
+                }, 3000);
             }
+        }
+
+        function showStatus(message, colorClass) {
+            statusMessage.textContent = message;
+            statusMessage.className = `mt-4 text-sm transition-all duration-300 ${colorClass}`;
+            statusMessage.style.opacity = '1';
+        }
+
+        // Initiate button event handler
+        initiateButton.addEventListener('click', () => {
+            audioManager.playClickSound();
+            triggerWebhook();
         });
 
-        // --- Page Load Logic (Check for Cookie) ---
-        window.onload = function() {
-            if (getCookie('wolverAuth') === 'true') {
-                console.log('User is already authenticated via cookie.');
-                passwordSection.classList.add('hidden');
-                triggerSection.classList.remove('hidden');
-                subheading.textContent = 'System Unlocked. Welcome Back.';
+        // Initialize app
+        function initializeApp() {
+            if (authSystem.isAuthenticated()) {
+                showMainInterface();
             } else {
-                console.log('User not authenticated. Showing password screen.');
+                showLoginScreen();
             }
-        };
-    </script>
+        }
 
+        // Start the application
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
 </body>
 </html>
