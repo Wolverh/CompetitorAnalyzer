@@ -13,100 +13,125 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Tone.js for audio -->
-    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.39/build/Tone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.min.js"></script>
+
+    <!-- Three.js for 3D background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <title>WOLVER'S HUB</title>
 
     <style>
-        /* Animated gradient background */
-        @keyframes gradient {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        :root {
+            --primary-glow: #7f5cff;
+            --secondary-glow: #a993ff;
         }
 
         body {
-            background: linear-gradient(-45deg, #0a0027, #15003c, #000c3d, #2f0078);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+            background-color: #020010; /* Deep space color */
             font-family: 'Inter', sans-serif;
             margin: 0;
             min-height: 100vh;
+            overflow: hidden; /* Prevent scrollbars from the canvas */
         }
 
         h1, .heading-font {
             font-family: 'Orbitron', sans-serif;
         }
 
-        /* Glass panel effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        .main-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
 
-        /* Neon button styles */
+        .glass {
+            background: rgba(15, 12, 41, 0.4);
+            backdrop-filter: blur(12px) saturate(150%);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 40px rgba(0,0,0,0.4);
+            transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .glass.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes pulse-glow {
+            0% { border-color: rgba(127, 92, 255, 0.3); }
+            50% { border-color: rgba(169, 147, 255, 0.7); }
+            100% { border-color: rgba(127, 92, 255, 0.3); }
+        }
+
+        .glass {
+            animation: pulse-glow 5s ease-in-out infinite;
+        }
+
         .neon-btn {
             position: relative;
             display: inline-block;
             padding: 0.75rem 2rem;
             border-radius: 0.5rem;
             font-weight: 600;
-            letter-spacing: 0.05em;
-            background: #7f5cff1a;
-            border: 1px solid #7f5cff;
+            letter-spacing: 0.1em;
+            background: transparent;
+            border: 1px solid var(--primary-glow);
             transition: all 0.3s ease;
             cursor: pointer;
             color: white;
             text-align: center;
             width: 100%;
+            text-shadow: 0 0 5px var(--primary-glow);
         }
 
         .neon-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            filter: grayscale(80%);
         }
 
         .neon-btn:not(:disabled):hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.02);
+            background: rgba(127, 92, 255, 0.1);
+            box-shadow: 0 0 15px var(--primary-glow), 0 0 30px var(--primary-glow);
         }
-
-        .neon-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            box-shadow: 0 0 8px #7f5cff, 0 0 16px #7f5cff, 0 0 24px #7f5cff;
-            opacity: 0.6;
-            z-index: -1;
-            transition: opacity 0.3s ease;
-        }
-
-        .neon-btn:not(:disabled):hover::before {
-            opacity: 1;
-        }
-
-        /* Form input styles */
+        
         .form-input {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 0.375rem;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1rem;
             width: 100%;
             color: white;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #7f5cff;
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 10px rgba(127, 92, 255, 0.5);
         }
 
         .form-input::placeholder {
             color: rgba(255, 255, 255, 0.5);
         }
 
-        /* Password input styles */
         .password-container {
             position: relative;
         }
@@ -125,128 +150,240 @@
         }
 
         .password-toggle:hover {
+            color: var(--secondary-glow);
+        }
+        
+        #status {
+            transition: color 0.5s ease;
+        }
+
+        .number-input-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.375rem;
+            padding: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        .number-input-wrapper:has(:focus-within), .number-input-wrapper:hover {
+             border-color: var(--primary-glow);
+            box-shadow: 0 0 10px rgba(127, 92, 255, 0.5);
+        }
+        .number-input-btn {
+            background: rgba(127, 92, 255, 0.2);
+            border: 1px solid var(--primary-glow);
             color: white;
+            font-weight: bold;
+            width: 40px;
+            height: 40px;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        .number-input-btn:hover {
+            background: rgba(127, 92, 255, 0.4);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+        .number-input-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: white;
+            flex-grow: 1;
+            text-align: center;
+            user-select: none;
+            cursor: text;
+            outline: none;
+            padding: 0 0.5rem;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center text-white p-4">
+<body class="text-white">
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="glass p-8 rounded-xl w-full max-w-md">
-        <h1 class="heading-font text-3xl mb-6 text-center text-white">
-            WOLVER'S HUB
-        </h1>
-        
-        <div class="mb-6">
-            <label for="password" class="block mb-2 text-white text-sm font-medium">
-                Enter Password
-            </label>
-            <div class="password-container">
-                <input
-                    type="password"
-                    id="password"
-                    class="form-input pr-12"
-                    placeholder="Enter password"
-                    autocomplete="current-password"
-                />
-                <button
-                    type="button"
-                    id="togglePassword"
-                    class="password-toggle"
-                    tabindex="-1"
-                >
-                    <svg id="eyeOpen" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                    <svg id="eyeClosed" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                        <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                </button>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="main-container">
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen" class="glass p-8 rounded-xl w-full max-w-md">
+            <h1 class="heading-font text-3xl mb-6 text-center text-white drop-shadow-[0_0_10px_var(--primary-glow)]">
+                WOLVER'S HUB
+            </h1>
+            
+            <div class="mb-6">
+                <label for="password" class="block mb-2 text-white text-sm font-medium">
+                    Enter Password
+                </label>
+                <div class="password-container">
+                    <input
+                        type="password"
+                        id="password"
+                        class="form-input pr-12"
+                        placeholder="Enter password"
+                        autocomplete="current-password"
+                    />
+                    <button type="button" id="togglePassword" class="password-toggle" tabindex="-1">
+                        <svg id="eyeOpen" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg id="eyeClosed" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
+            <button id="loginBtn" class="neon-btn">Unlock</button>
         </div>
 
-        <button id="loginBtn" class="neon-btn">
-            Unlock
-        </button>
-    </div>
-
-    <!-- MAIN SCREEN -->
-    <div id="mainScreen" class="glass p-8 rounded-xl w-full max-w-lg hidden">
-        <h1 class="heading-font text-3xl mb-6 text-center text-white">
-            WOLVER'S HUB
-        </h1>
-        
-        <div class="space-y-4 mb-6">
-            <div>
-                <label for="username" class="block mb-1 text-sm font-medium text-white">
-                    Competitor TikTok Username
-                </label>
-                <input
-                    type="text"
-                    id="username"
-                    class="form-input"
-                    placeholder="e.g., islamabuauf"
-                />
-            </div>
+        <!-- MAIN SCREEN (NOW MORE COMPACT AND FIXED) -->
+        <div id="mainScreen" class="glass p-8 rounded-xl w-full max-w-md">
+            <h1 class="heading-font text-3xl mb-6 text-center text-white drop-shadow-[0_0_10px_var(--primary-glow)]">
+                WOLVER'S HUB
+            </h1>
             
-            <div>
-                <label for="videoCount" class="block mb-1 text-sm font-medium text-white">
-                    Number of Videos
-                </label>
-                <input
-                    type="number"
-                    id="videoCount"
-                    class="form-input"
-                    placeholder="e.g., 60"
-                    value="60"
-                />
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="username" class="block mb-1 text-sm font-medium text-white">Competitor TikTok Username</label>
+                    <input type="text" id="username" class="form-input" placeholder="@username"/>
+                </div>
+                
+                <div>
+                    <label for="videoCount" class="block mb-1 text-sm font-medium text-white">Number of Videos</label>
+                    <div class="number-input-wrapper">
+                        <button id="decrementBtn" class="number-input-btn">-</button>
+                        <span id="videoCountDisplay" class="number-input-display" contenteditable="true">3</span>
+                        <button id="incrementBtn" class="number-input-btn">+</button>
+                    </div>
+                    <input type="hidden" id="videoCount" value="3" />
+                </div>
+                
+                <div>
+                    <label for="sheetId" class="block mb-1 text-sm font-medium text-white">Google Sheet ID</label>
+                    <input type="text" id="sheetId" class="form-input" placeholder="Enter the ID from your sheet's URL"/>
+                </div>
             </div>
-            
-            <div>
-                <label for="sheetId" class="block mb-1 text-sm font-medium text-white">
-                    Google Sheet ID
-                </label>
-                <input
-                    type="text"
-                    id="sheetId"
-                    class="form-input"
-                    placeholder="Enter the ID from your sheet's URL"
-                />
-            </div>
-        </div>
 
-        <button id="initiateBtn" class="neon-btn">
-            INITIATE ANALYSIS
-        </button>
-        
-        <div class="mt-4 text-center text-sm opacity-90 min-h-[60px]">
-            <p id="status" class="text-white"></p>
-            <div id="result" class="mt-2 font-semibold"></div>
+            <button id="initiateBtn" class="neon-btn">INITIATE ANALYSIS</button>
+            
+            <div class="mt-4 text-center text-sm opacity-90 min-h-[60px]">
+                <p id="status" class="text-white"></p>
+                <div id="result" class="mt-2 font-semibold"></div>
+            </div>
         </div>
     </div>
 
     <script>
+        /* ---------- 3D BACKGROUND SCRIPT (SINGULARITY EDITION) ---------- */
         (function() {
-            /* ---------- CONSTANTS ---------- */
-            const STORED_B64 = 'Tm91cmE='; // "Noura" in Base64
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Starfields
+            function createStarfield(count, size, color, range) {
+                const positions = new Float32Array(count * 3);
+                for (let i = 0; i < count * 3; i++) { positions[i] = (Math.random() - 0.5) * range; }
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const material = new THREE.PointsMaterial({ size, color, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.9 });
+                return new THREE.Points(geometry, material);
+            }
+            const stars1 = createStarfield(7000, 0.03, 0xa993ff, 100);
+            const stars2 = createStarfield(5000, 0.02, 0xffffff, 150);
+            scene.add(stars1, stars2);
+            
+            // Nebulae lights
+            const light1 = new THREE.PointLight(0x5831a4, 1.5, 300, 2);
+            light1.position.set(-50, 20, -50);
+            scene.add(light1);
+            const light2 = new THREE.PointLight(0x9370db, 1.5, 300, 2);
+            light2.position.set(50, -20, -60);
+            scene.add(light2);
+
+            // Black Hole Effect
+            const blackHoleGroup = new THREE.Group();
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            const gradient = context.createLinearGradient(0, 0, 256, 0);
+            gradient.addColorStop(0, 'rgba(0,0,0,0)');
+            gradient.addColorStop(0.2, 'rgba(255,200,100,0.5)');
+            gradient.addColorStop(0.4, 'rgba(127,92,255,1)');
+            gradient.addColorStop(0.8, 'rgba(255,255,255,0.5)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 256, 256);
+            for(let i=0; i<50; i++) {
+                context.fillStyle = `rgba(255,255,255,${Math.random() * 0.1})`;
+                context.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+            }
+            const diskTexture = new THREE.CanvasTexture(canvas);
+            const diskGeometry = new THREE.TorusGeometry(3.5, 1.2, 2, 100);
+            const diskMaterial = new THREE.MeshBasicMaterial({ map: diskTexture, blending: THREE.AdditiveBlending, color: 0xffffff, transparent: true, side: THREE.DoubleSide });
+            const accretionDisk = new THREE.Mesh(diskGeometry, diskMaterial);
+            accretionDisk.rotation.x = Math.PI / 2.2;
+            const blackHoleSphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+            blackHoleGroup.add(accretionDisk);
+            blackHoleGroup.add(blackHoleSphere);
+            blackHoleGroup.position.z = -10;
+            scene.add(blackHoleGroup);
+
+            camera.position.z = 15;
+
+            let mouseX = 0;
+            let mouseY = 0;
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            const clock = new THREE.Clock();
+            function animate() {
+                const elapsedTime = clock.getElapsedTime();
+                stars1.rotation.y = elapsedTime * 0.05;
+                stars2.rotation.y = elapsedTime * 0.03;
+                light1.position.x = Math.sin(elapsedTime * 0.1) * 50;
+                light2.position.x = Math.cos(elapsedTime * 0.1) * 50;
+                accretionDisk.rotation.z = elapsedTime * 0.2;
+                blackHoleGroup.rotation.y = elapsedTime * 0.08;
+                camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+                camera.position.y += (mouseY * 2 - camera.position.y) * 0.02;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            });
+        })();
+
+        /* ---------- APPLICATION LOGIC (FIXED & UPDATED) ---------- */
+        (function() {
+            const STORED_B64 = 'Tm91cmE=';
             const COOKIE_NAME = 'wolverAuth';
             const STORAGE_PREFIX = 'wolver_';
 
-            /* ---------- UTILITY FUNCTIONS ---------- */
             function setCookie(name, value, days) {
                 const date = new Date();
-                date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                 document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/; SameSite=Strict; secure`;
             }
 
             function getCookie(name) {
-                const cookie = document.cookie
-                    .split(';')
-                    .map(c => c.trim())
-                    .find(c => c.startsWith(`${name}=`));
-                
+                const cookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${name}=`));
                 return cookie ? cookie.split('=')[1] : null;
             }
 
@@ -258,11 +395,12 @@
 
             function loadFormData() {
                 usernameInput.value = localStorage.getItem(`${STORAGE_PREFIX}username`) || '';
-                videoCountInput.value = localStorage.getItem(`${STORAGE_PREFIX}videoCount`) || '60';
+                const savedCount = localStorage.getItem(`${STORAGE_PREFIX}videoCount`) || '3';
+                videoCountInput.value = savedCount;
+                videoCountDisplay.textContent = savedCount;
                 sheetIdInput.value = localStorage.getItem(`${STORAGE_PREFIX}sheetId`) || '';
             }
 
-            /* ---------- DOM ELEMENTS ---------- */
             const loginScreen = document.getElementById('loginScreen');
             const mainScreen = document.getElementById('mainScreen');
             const passwordInput = document.getElementById('password');
@@ -272,202 +410,68 @@
             const loginBtn = document.getElementById('loginBtn');
             
             const usernameInput = document.getElementById('username');
-            const videoCountInput = document.getElementById('videoCount');
             const sheetIdInput = document.getElementById('sheetId');
             const initiateBtn = document.getElementById('initiateBtn');
             const statusEl = document.getElementById('status');
             const resultEl = document.getElementById('result');
 
-            /* ---------- AUDIO MANAGEMENT ---------- */
+            const videoCountInput = document.getElementById('videoCount');
+            const videoCountDisplay = document.getElementById('videoCountDisplay');
+            const incrementBtn = document.getElementById('incrementBtn');
+            const decrementBtn = document.getElementById('decrementBtn');
+
             let audioReady = false;
             let synthesizers = null;
 
             async function initAudio() {
                 if (audioReady) return;
-                
                 try {
                     await Tone.start();
-                    
                     synthesizers = {
                         synth: new Tone.Synth().toDestination(),
-                        errSynth: new Tone.Synth({ 
-                            oscillator: { type: 'square' } 
-                        }).toDestination(),
-                        clickSynth: new Tone.Synth({ 
-                            oscillator: { type: 'triangle' }, 
-                            envelope: { decay: 0.05, release: 0.1 } 
-                        }).toDestination(),
-                        failSynth: new Tone.Synth({ 
-                            oscillator: { type: 'sawtooth' } 
-                        }).toDestination()
+                        errSynth: new Tone.Synth({ oscillator: { type: 'square' } }).toDestination(),
+                        clickSynth: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { decay: 0.05, release: 0.1 } }).toDestination(),
+                        failSynth: new Tone.Synth({ oscillator: { type: 'sawtooth' } }).toDestination()
                     };
-                    
                     audioReady = true;
-                } catch (error) {
-                    console.error('Failed to initialize audio:', error);
-                    audioReady = false;
-                }
+                } catch (error) { console.error('Failed to initialize audio:', error); }
             }
+            
+            async function playAudio(fn) { if (audioReady && synthesizers) { try { fn(); } catch (error) { console.error('Audio playback error:', error); } } }
+            async function chime() { await playAudio(() => { const notes = ['C5', 'E5', 'G5', 'C6']; notes.forEach((note, i) => synthesizers.synth.triggerAttackRelease(note, 0.15, `+${i * 0.15}`)); }); }
+            async function errorBuzz() { await playAudio(() => { synthesizers.errSynth.triggerAttackRelease('C2', 0.2); }); }
+            async function clickSound() { await playAudio(() => { synthesizers.clickSynth.triggerAttackRelease('C6', 0.05); }); }
+            async function failTone() { await playAudio(() => { const notes = ['C4', 'G3', 'E3', 'C3']; notes.forEach((note, i) => synthesizers.failSynth.triggerAttackRelease(note, 0.2, `+${i * 0.15}`)); }); }
 
-            async function playAudio(fn) {
-                if (audioReady && synthesizers) {
-                    try {
-                        fn();
-                    } catch (error) {
-                        console.error('Audio playback error:', error);
-                    }
-                }
-            }
+            async function createReturnChannel() { const proxyUrl = 'https://api.allorigins.win/raw?url='; const targetUrl = encodeURIComponent('https://webhook.site/token'); const response = await fetch(proxyUrl + targetUrl, { method: 'POST' }); if (!response.ok) { throw new Error('Could not create return channel.'); } const tokenData = await response.json(); return `https://webhook.site/${tokenData.uuid}`; }
+            async function pollForResult(uuid, onResult, onError) { let isPolling = true; let pollCount = 0; const maxPolls = 120; const poll = async () => { if (!isPolling || pollCount >= maxPolls) { if (pollCount >= maxPolls) { onError(new Error('Timeout: No result received within 10 minutes')); } return; } try { const proxyUrl = 'https://api.allorigins.win/get?url='; const targetUrl = encodeURIComponent(`https://webhook.site/token/${uuid}/requests?sorting=newest`); const response = await fetch(proxyUrl + targetUrl); if (!response.ok) { throw new Error('Failed to check for results'); } const data = await response.json(); const requests = JSON.parse(data.contents); const postRequest = requests.data?.find((req) => req.method === 'POST' && req.content); if (postRequest) { try { const resultPayload = JSON.parse(postRequest.content); if (resultPayload?.docUrl) { onResult(resultPayload); return; } } catch (parseError) { console.error('Error parsing result:', parseError); } } pollCount++; if (isPolling) { setTimeout(poll, 5000); } } catch (error) { onError(error); } }; setTimeout(poll, 2000); return () => { isPolling = false; }; }
+            async function sendToMake(payload) { const makeWebhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky'; return fetch(makeWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); }
 
-            async function chime() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    const notes = ['C5', 'E5', 'G5', 'C6'];
-                    notes.forEach((note, i) => {
-                        synthesizers.synth.triggerAttackRelease(note, 0.15, `+${i * 0.15}`);
-                    });
-                });
-            }
-
-            async function errorBuzz() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    synthesizers.errSynth.triggerAttackRelease('C2', 0.2);
-                });
-            }
-
-            async function clickSound() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    synthesizers.clickSynth.triggerAttackRelease('C6', 0.05);
-                });
-            }
-
-            async function failTone() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    const notes = ['C4', 'G3', 'E3', 'C3'];
-                    notes.forEach((note, i) => {
-                        synthesizers.failSynth.triggerAttackRelease(note, 0.2, `+${i * 0.15}`);
-                    });
-                });
-            }
-
-            /* ---------- WEBHOOK UTILITIES ---------- */
-            async function createReturnChannel() {
-                const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const targetUrl = encodeURIComponent('https://webhook.site/token');
-                
-                const response = await fetch(proxyUrl + targetUrl, { method: 'POST' });
-                
-                if (!response.ok) {
-                    throw new Error('Could not create return channel.');
-                }
-                
-                const tokenData = await response.json();
-                return `https://webhook.site/${tokenData.uuid}`;
-            }
-
-            async function pollForResult(uuid, onResult, onError) {
-                let isPolling = true;
-                let pollCount = 0;
-                const maxPolls = 120; // 10 minutes with 5-second intervals
-                
-                const poll = async () => {
-                    if (!isPolling || pollCount >= maxPolls) {
-                        if (pollCount >= maxPolls) {
-                            onError(new Error('Timeout: No result received within 10 minutes'));
-                        }
-                        return;
-                    }
-                    
-                    try {
-                        const proxyUrl = 'https://api.allorigins.win/get?url=';
-                        const targetUrl = encodeURIComponent(`https://webhook.site/token/${uuid}/requests?sorting=newest`);
-                        
-                        const response = await fetch(proxyUrl + targetUrl);
-                        
-                        if (!response.ok) {
-                            throw new Error('Failed to check for results');
-                        }
-                        
-                        const data = await response.json();
-                        const requests = JSON.parse(data.contents);
-                        
-                        // Look for POST requests with content
-                        const postRequest = requests.data?.find((req) => 
-                            req.method === 'POST' && req.content
-                        );
-                        
-                        if (postRequest) {
-                            try {
-                                const resultPayload = JSON.parse(postRequest.content);
-                                if (resultPayload?.docUrl) {
-                                    onResult(resultPayload);
-                                    return;
-                                }
-                            } catch (parseError) {
-                                console.error('Error parsing result:', parseError);
-                            }
-                        }
-                        
-                        pollCount++;
-                        if (isPolling) {
-                            setTimeout(poll, 5000); // Poll every 5 seconds
-                        }
-                        
-                    } catch (error) {
-                        onError(error);
-                    }
-                };
-                
-                // Start polling
-                setTimeout(poll, 2000); // Initial delay of 2 seconds
-                
-                // Return cleanup function
-                return () => {
-                    isPolling = false;
-                };
-            }
-
-            async function sendToMake(payload) {
-                const makeWebhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
-                
-                return fetch(makeWebhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            }
-
-            /* ---------- VIEW MANAGEMENT ---------- */
             function showMainScreen() {
-                loginScreen.classList.add('hidden');
-                mainScreen.classList.remove('hidden');
-                loadFormData();
+                loginScreen.classList.remove('visible');
+                setTimeout(() => {
+                    loginScreen.style.display = 'none';
+                    mainScreen.style.display = 'block';
+                    mainScreen.classList.add('visible');
+                    loadFormData();
+                }, 700);
             }
+            function isAuthenticated() { return getCookie(COOKIE_NAME) === '1'; }
+            function setAuthenticated() { setCookie(COOKIE_NAME, '1', 7); }
 
-            function isAuthenticated() {
-                return getCookie(COOKIE_NAME) === '1';
-            }
-
-            function setAuthenticated() {
-                setCookie(COOKIE_NAME, '1', 7);
-            }
-
-            /* ---------- EVENT HANDLERS ---------- */
             let cleanupPolling = null;
 
-            // Check authentication on load
             if (isAuthenticated()) {
-                showMainScreen();
+                loginScreen.style.display = 'none';
+                mainScreen.style.display = 'block';
+                mainScreen.classList.add('visible');
+                loadFormData();
+            } else {
+                loginScreen.style.display = 'block';
+                loginScreen.classList.add('visible');
+                mainScreen.style.display = 'none';
             }
 
-            // Password toggle
             togglePassword.addEventListener('click', () => {
                 const isPassword = passwordInput.type === 'password';
                 passwordInput.type = isPassword ? 'text' : 'password';
@@ -475,16 +479,10 @@
                 eyeClosed.style.display = isPassword ? 'block' : 'none';
             });
 
-            // Login functionality
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    loginBtn.click();
-                }
-            });
+            passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { loginBtn.click(); } });
 
             loginBtn.addEventListener('click', async () => {
                 await initAudio();
-                
                 if (btoa(passwordInput.value) === STORED_B64) {
                     await chime();
                     setAuthenticated();
@@ -495,17 +493,67 @@
                 }
             });
 
-            // Main functionality
+            // --- RECALIBRATED: Logic for Custom Number Input ---
+            function updateVideoCount(newValue) {
+                const numValue = Math.max(1, parseInt(newValue, 10) || 1);
+                videoCountInput.value = numValue;
+                videoCountDisplay.textContent = numValue;
+            }
+
+            incrementBtn.addEventListener('click', () => {
+                clickSound();
+                updateVideoCount(parseInt(videoCountInput.value) + 1);
+            });
+            decrementBtn.addEventListener('click', () => {
+                clickSound();
+                updateVideoCount(parseInt(videoCountInput.value) - 1);
+            });
+            
+            function setCaretPosition(elem, caretPos) {
+                const range = document.createRange();
+                const sel = window.getSelection();
+                if (elem.childNodes.length > 0) {
+                    const len = elem.childNodes[0].length;
+                    range.setStart(elem.childNodes[0], Math.min(len, caretPos));
+                    range.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            }
+
+            videoCountDisplay.addEventListener('input', (e) => {
+                const sel = window.getSelection();
+                const offset = sel.focusOffset;
+                const originalText = e.target.textContent;
+                
+                const sanitized = originalText.replace(/[^0-9]/g, '');
+                
+                if (originalText !== sanitized) {
+                    e.target.textContent = sanitized;
+                    setCaretPosition(e.target, offset - (originalText.length - sanitized.length));
+                }
+                
+                videoCountInput.value = sanitized;
+            });
+
+            videoCountDisplay.addEventListener('blur', (e) => {
+                const currentValue = parseInt(e.target.textContent, 10);
+                if (isNaN(currentValue) || currentValue < 1) {
+                    updateVideoCount(1);
+                } else {
+                    updateVideoCount(currentValue);
+                }
+            });
+
+
             initiateBtn.addEventListener('click', async () => {
                 await initAudio();
                 await clickSound();
 
-                // Clear previous results and disable the button
                 statusEl.textContent = '';
                 resultEl.innerHTML = '';
                 initiateBtn.disabled = true;
 
-                // Validate user inputs
                 const payload = {
                     username: usernameInput.value.trim(),
                     videoCount: parseInt(videoCountInput.value.trim(), 10),
@@ -522,12 +570,10 @@
                 saveFormData();
 
                 try {
-                    // Create a new return URL from webhook.site
                     statusEl.textContent = 'Generating secure return channel...';
                     const returnUrl = await createReturnChannel();
                     const uuid = returnUrl.split('/').pop();
 
-                    // Start polling for the result from the Make.com automation
                     statusEl.textContent = 'Listening for result...';
                     cleanupPolling = await pollForResult(
                         uuid,
@@ -545,16 +591,11 @@
                         }
                     );
 
-                    // Send the request to Make.com automation
                     statusEl.textContent = 'Sending request to automation... This may take a few minutes.';
                     const finalPayload = { ...payload, returnUrl };
-
                     const makeResponse = await sendToMake(finalPayload);
 
-                    if (!makeResponse.ok) {
-                        throw new Error('Failed to send request to the automation.');
-                    }
-
+                    if (!makeResponse.ok) { throw new Error('Failed to send request to the automation.'); }
                     statusEl.textContent = 'Request sent successfully. Waiting for results...';
 
                 } catch (error) {
@@ -565,10 +606,7 @@
                 }
             });
 
-            // Cleanup on page unload
-            window.addEventListener('beforeunload', () => {
-                if (cleanupPolling) cleanupPolling();
-            });
+            window.addEventListener('beforeunload', () => { if (cleanupPolling) cleanupPolling(); });
 
         })();
     </script>
