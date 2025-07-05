@@ -6,11 +6,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://fav.farm/✅" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <title>WOLVER'S HUB</title>
-    <link rel="icon" href="https://fav.farm/✅" />
     <style>
         :root {
             --primary-glow: #7f5cff;
@@ -388,15 +388,17 @@
 
             let audioReady = false;
             let synthesizers = null;
+            
+            // Initialize audio on first user interaction to prevent AudioContext warning
             async function initAudio() {
                 if (audioReady) return;
                 try {
                     await Tone.start();
-                    synthesizers = {
-                        synth: new Tone.Synth().toDestination(),
-                        errSynth: new Tone.Synth({ oscillator: { type: 'square' } }).toDestination(),
-                        clickSynth: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { decay: 0.05, release: 0.1 } }).toDestination(),
-                        failSynth: new Tone.Synth({ oscillator: { type: 'sawtooth' } }).toDestination(),
+                    synthesizers = { 
+                        synth: new Tone.Synth().toDestination(), 
+                        errSynth: new Tone.Synth({ oscillator: { type: 'square' } }).toDestination(), 
+                        clickSynth: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { decay: 0.05, release: 0.1 } }).toDestination(), 
+                        failSynth: new Tone.Synth({ oscillator: { type: 'sawtooth' } }).toDestination() 
                     };
                     audioReady = true;
                     console.log('Audio ready.');
@@ -404,17 +406,17 @@
                     console.error('Failed to initialize audio:', error);
                 }
             }
+
             async function playAudio(fn) { if (audioReady && synthesizers) { try { fn(); } catch (error) { console.error('Audio playback error:', error); } } }
             async function chime() { await playAudio(() => { const notes = ['C5', 'E5', 'G5', 'C6']; notes.forEach((note, i) => synthesizers.synth.triggerAttackRelease(note, 0.15, `+${i * 0.15}`)); }); }
             async function errorBuzz() { await playAudio(() => { synthesizers.errSynth.triggerAttackRelease('C2', 0.2); }); }
             async function clickSound() { await playAudio(() => { synthesizers.clickSynth.triggerAttackRelease('C6', 0.05); }); }
             async function failTone() { await playAudio(() => { const notes = ['C4', 'G3', 'E3', 'C3']; notes.forEach((note, i) => synthesizers.failSynth.triggerAttackRelease(note, 0.2, `+${i * 0.15}`)); }); }
             
-            // ### MODIFIED FUNCTION ###
+            // Use a reliable CORS proxy to fix the fetch request
             async function createReturnChannel() {
                 const targetUrl = 'https://webhook.site/token';
-                // Use a proxy to bypass CORS error
-                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
                 try {
                     const response = await fetch(proxyUrl, { 
                         method: 'POST',
@@ -431,15 +433,61 @@
                 }
             }
 
-            async function pollForResult(uuid, onResult, onError) { let isPolling = true; let pollCount = 0; const maxPolls = 120; const poll = async () => { if (!isPolling || pollCount >= maxPolls) { if (pollCount >= maxPolls) { onError(new Error('Timeout: No result received within 10 minutes')); } return; } try { const response = await fetch(`https://webhook.site/token/${uuid}/requests?sorting=newest`); if (!response.ok) { throw new Error('Failed to check for results'); } const data = await response.json(); const postRequest = data.data?.find((req) => req.method === 'POST' && req.content); if (postRequest) { try { const resultPayload = JSON.parse(postRequest.content); if (resultPayload?.docUrl || resultPayload?.status === 'success') { onResult(resultPayload); return; } } catch (parseError) { console.error('Error parsing result:', parseError); } } pollCount++; if (isPolling) { setTimeout(poll, 5000); } } catch (error) { console.error('Polling error:', error); pollCount++; if (isPolling && pollCount < maxPolls) { setTimeout(poll, 5000); } else { onError(error); } } }; setTimeout(poll, 2000); return () => { isPolling = false; }; }
-            async function sendToMake(payload) {
-                // Webhook URL for the specific Make.com scenario
-                const makeWebhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky';
-                return fetch(makeWebhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            async function pollForResult(uuid, onResult, onError) { 
+                let isPolling = true; 
+                let pollCount = 0; 
+                const maxPolls = 120; 
+                const poll = async () => { 
+                    if (!isPolling || pollCount >= maxPolls) { 
+                        if (pollCount >= maxPolls) { 
+                            onError(new Error('Timeout: No result received within 10 minutes')); 
+                        } 
+                        return; 
+                    } 
+                    try { 
+                        const response = await fetch(`https://webhook.site/token/${uuid}/requests?sorting=newest`); 
+                        if (!response.ok) { 
+                            throw new Error('Failed to check for results'); 
+                        } 
+                        const data = await response.json(); 
+                        const postRequest = data.data?.find((req) => req.method === 'POST' && req.content); 
+                        if (postRequest) { 
+                            try { 
+                                const resultPayload = JSON.parse(postRequest.content); 
+                                if (resultPayload?.docUrl || resultPayload?.status === 'success') { 
+                                    onResult(resultPayload); 
+                                    return; 
+                                } 
+                            } catch (parseError) { 
+                                console.error('Error parsing result:', parseError); 
+                            } 
+                        } 
+                        pollCount++; 
+                        if (isPolling) { 
+                            setTimeout(poll, 5000); 
+                        } 
+                    } catch (error) { 
+                        console.error('Polling error:', error); 
+                        pollCount++; 
+                        if (isPolling && pollCount < maxPolls) { 
+                            setTimeout(poll, 5000); 
+                        } else { 
+                            onError(error); 
+                        } 
+                    } 
+                }; 
+                setTimeout(poll, 2000); 
+                return () => { isPolling = false; }; 
+            }
+
+            async function sendToMake(payload) { 
+                // This webhook URL is specific to the Make.com automation scenario
+                const makeWebhookUrl = 'https://hook.eu2.make.com/hll3xsclyahdg9xxnckf1txz3p559dky'; 
+                return fetch(makeWebhookUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                }); 
             }
             
             function showMainScreen() { loginScreen.classList.remove('visible'); setTimeout(() => { loginScreen.style.display = 'none'; mainScreen.style.display = 'block'; mainScreen.classList.add('visible'); loadFormData(); }, 700); }
@@ -449,16 +497,20 @@
             if (isAuthenticated()) { loginScreen.style.display = 'none'; mainScreen.style.display = 'block'; mainScreen.classList.add('visible'); loadFormData(); } else { loginScreen.style.display = 'block'; loginScreen.classList.add('visible'); mainScreen.style.display = 'none'; }
             togglePassword.addEventListener('click', () => { const isPassword = passwordInput.type === 'password'; passwordInput.type = isPassword ? 'text' : 'password'; eyeOpen.style.display = isPassword ? 'none' : 'block'; eyeClosed.style.display = isPassword ? 'block' : 'none'; });
             passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { loginBtn.click(); } });
-            loginBtn.addEventListener('click', async () => {
+            
+            // Initialize audio on first user interaction (Unlock button click)
+            loginBtn.addEventListener('click', async () => { 
+                // Initialize audio on first user interaction
                 await initAudio();
-                if (btoa(passwordInput.value) === STORED_B64) {
-                    await chime();
-                    setAuthenticated();
-                    showMainScreen();
-                } else {
-                    await errorBuzz();
-                    passwordInput.value = '';
-                }
+                
+                if (btoa(passwordInput.value) === STORED_B64) { 
+                    await chime(); 
+                    setAuthenticated(); 
+                    showMainScreen(); 
+                } else { 
+                    await errorBuzz(); 
+                    passwordInput.value = ''; 
+                } 
             });
             
             function updateVideoCount(newValue) { const numValue = Math.max(1, parseInt(newValue, 10) || 1); videoCountInput.value = numValue; videoCountDisplay.textContent = numValue; }
