@@ -413,22 +413,24 @@
             async function clickSound() { await playAudio(() => { synthesizers.clickSynth.triggerAttackRelease('C6', 0.05); }); }
             async function failTone() { await playAudio(() => { const notes = ['C4', 'G3', 'E3', 'C3']; notes.forEach((note, i) => synthesizers.failSynth.triggerAttackRelease(note, 0.2, `+${i * 0.15}`)); }); }
             
-            // Use a reliable CORS proxy to fix the fetch request
+            // Create webhook.site token directly (webhook.site supports CORS)
             async function createReturnChannel() {
-                const targetUrl = 'https://webhook.site/token';
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
                 try {
-                    const response = await fetch(proxyUrl, { 
+                    const response = await fetch('https://webhook.site/token', { 
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
                     });
                     if (!response.ok) { 
-                        throw new Error('Could not create return channel via proxy.'); 
+                        throw new Error(`Failed to create webhook.site token. Status: ${response.status}`); 
                     }
                     const tokenData = await response.json();
+                    console.log('Created webhook.site token:', tokenData);
                     return `https://webhook.site/${tokenData.uuid}`;
                 } catch (error) {
-                    console.error('Error creating webhook via proxy:', error);
+                    console.error('Error creating webhook.site token:', error);
                     throw error;
                 }
             }
@@ -437,31 +439,53 @@
                 let isPolling = true; 
                 let pollCount = 0; 
                 const maxPolls = 120; 
+                console.log(`Starting to poll for results on webhook: ${uuid}`);
+                
                 const poll = async () => { 
                     if (!isPolling || pollCount >= maxPolls) { 
                         if (pollCount >= maxPolls) { 
+                            console.log('Polling timeout reached');
                             onError(new Error('Timeout: No result received within 10 minutes')); 
                         } 
                         return; 
                     } 
                     try { 
-                        const response = await fetch(`https://webhook.site/token/${uuid}/requests?sorting=newest`); 
+                        const pollUrl = `https://webhook.site/token/${uuid}/requests?sorting=newest`;
+                        console.log(`Poll attempt ${pollCount + 1}: ${pollUrl}`);
+                        
+                        const response = await fetch(pollUrl, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        }); 
+                        
                         if (!response.ok) { 
-                            throw new Error('Failed to check for results'); 
+                            throw new Error(`Failed to poll webhook.site. Status: ${response.status}`); 
                         } 
+                        
                         const data = await response.json(); 
+                        console.log(`Poll ${pollCount + 1} result:`, data);
+                        
                         const postRequest = data.data?.find((req) => req.method === 'POST' && req.content); 
+                        
                         if (postRequest) { 
+                            console.log('Found POST request:', postRequest);
                             try { 
                                 const resultPayload = JSON.parse(postRequest.content); 
+                                console.log('Parsed result payload:', resultPayload);
+                                
                                 if (resultPayload?.docUrl || resultPayload?.status === 'success') { 
+                                    console.log('Success condition met, calling onResult');
                                     onResult(resultPayload); 
                                     return; 
                                 } 
                             } catch (parseError) { 
-                                console.error('Error parsing result:', parseError); 
+                                console.error('Error parsing result:', parseError, 'Content:', postRequest.content); 
                             } 
-                        } 
+                        } else {
+                            console.log('No POST request found in poll result');
+                        }
+                        
                         pollCount++; 
                         if (isPolling) { 
                             setTimeout(poll, 5000); 
