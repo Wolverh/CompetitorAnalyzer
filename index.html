@@ -1,589 +1,440 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLVER'S HUB - Task Initiator</title>
+    
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.39/build/Tone.js"></script>
-
-    <title>WOLVER'S HUB</title>
-
+    
     <style>
-        /* Animated gradient background */
-        @keyframes gradient {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
         body {
-            background: linear-gradient(-45deg, #0a0027, #15003c, #000c3d, #2f0078);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            min-height: 100vh;
+            background-color: #020617; /* Very dark blue */
+            overflow: hidden; /* Hide scrollbars caused by canvas */
         }
 
-        h1, .heading-font {
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        /* Glass panel effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        /* Neon button styles */
-        .neon-btn {
-            position: relative;
-            display: inline-block;
-            padding: 0.75rem 2rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            background: #7f5cff1a;
-            border: 1px solid #7f5cff;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            color: white;
-            text-align: center;
+        /* --- Interactive Stars Background --- */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            z-index: -1; /* Place it behind all content */
         }
 
-        .neon-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        /* --- Glassmorphism Card --- */
+        .glass-card {
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(128, 137, 162, 0.15);
         }
 
-        .neon-btn:not(:disabled):hover {
-            transform: translateY(-2px);
+        /* --- Input Styling --- */
+        .galaxy-input {
+            background-color: rgba(13, 17, 23, 0.8);
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            transition: all 0.2s ease-in-out;
+            -webkit-appearance: none; /* Removes default Safari styling */
+            -moz-appearance: none; /* Removes default Firefox styling */
+            appearance: none; /* Removes default browser styling */
         }
-
-        .neon-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            box-shadow: 0 0 8px #7f5cff, 0 0 16px #7f5cff, 0 0 24px #7f5cff;
-            opacity: 0.6;
-            z-index: -1;
-            transition: opacity 0.3s ease;
+        .galaxy-input::placeholder {
+            color: #8b949e;
         }
-
-        .neon-btn:not(:disabled):hover::before {
-            opacity: 1;
-        }
-
-        /* Form input styles */
-        .form-input {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 0.375rem;
-            padding: 0.5rem 1rem;
-            width: 100%;
-            color: white;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-input:focus {
+        .galaxy-input:focus {
             outline: none;
-            border-color: #7f5cff;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
         }
-
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Password input styles */
-        .password-container {
+        .select-wrapper {
             position: relative;
         }
-
-        .password-toggle {
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 1rem;
+            color: #9ca3af;
             position: absolute;
-            right: 0.75rem;
+            right: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.7);
-            cursor: pointer;
-            padding: 0.25rem;
-            transition: color 0.3s ease;
+            pointer-events: none;
         }
 
-        .password-toggle:hover {
-            color: white;
+
+        /* --- Main Button Styling --- */
+        .galaxy-button {
+            background-image: linear-gradient(to right, #818cf8, #a78bfa, #c084fc);
+            background-size: 200% auto;
+            transition: all 0.3s ease-in-out;
+            border: none;
+        }
+        .galaxy-button:hover {
+            background-position: right center;
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
+        }
+        .galaxy-button:disabled {
+            background-image: none;
+            background-color: #374151;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* --- Fancy Number Input Styling --- */
+        .number-control-button {
+            background-color: #374151;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+            transition: all 0.2s ease;
+        }
+        .number-control-button:hover {
+            background-color: #4b5563;
+            border-color: #6b7280;
+        }
+        .number-display {
+            color: #f9fafb;
+            background-color: rgba(13, 17, 23, 0.8);
+            border-top: 1px solid #30363d;
+            border-bottom: 1px solid #30363d;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center text-white p-4">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div id="loginScreen" class="glass p-8 rounded-xl w-full max-w-md">
-        <h1 class="heading-font text-3xl mb-6 text-center text-white">
-            WOLVER'S HUB
-        </h1>
-        
-        <div class="mb-6">
-            <label for="password" class="block mb-2 text-white text-sm font-medium">
-                Enter Password
-            </label>
-            <div class="password-container">
-                <input
-                    type="password"
-                    id="password"
-                    class="form-input pr-12"
-                    placeholder="Enter password"
-                    autocomplete="current-password"
-                />
-                <button
-                    type="button"
-                    id="togglePassword"
-                    class="password-toggle"
-                    tabindex="-1"
-                >
-                    <svg id="eyeOpen" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                    <svg id="eyeClosed" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                        <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
+    <canvas id="stars-canvas"></canvas>
+
+    <div class="w-full max-w-lg">
+        <!-- Login View -->
+        <div id="login-view">
+            <div class="glass-card p-8 rounded-2xl shadow-2xl">
+                <h1 class="text-3xl font-bold text-center text-white mb-2">WOLVER'S HUB</h1>
+                <p class="text-center text-gray-400 mb-8">Secure Access</p>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                        <input type="password" id="password" name="password" required class="w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter access key">
+                    </div>
+                    <p id="login-error" class="text-red-400 text-sm text-center mb-4 h-5"></p>
+                    <button type="submit" class="w-full text-white font-bold py-3 px-4 rounded-lg galaxy-button">
+                        Authenticate
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main App View -->
+        <div id="form-view" class="hidden">
+            <div class="glass-card p-8 rounded-2xl shadow-2xl">
+                <h1 class="text-3xl font-bold text-center text-white mb-2">WOLVER'S HUB</h1>
+                <p class="text-center text-gray-400 mb-8">Launch your n8n automation workflow.</p>
+
+                <form id="analyzeForm">
+                    <div class="space-y-6">
+                        <div>
+                            <label for="keyword" class="block text-sm font-medium text-gray-300">TikTok Keyword</label>
+                            <input type="text" id="keyword" name="keyword" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter your search keyword...">
+                        </div>
+
+                        <div>
+                            <label for="dialect-select" class="block text-sm font-medium text-gray-300">Arabic Dialect</label>
+                            <div class="select-wrapper mt-1">
+                                <select id="dialect-select" name="dialect" class="w-full px-4 py-3 rounded-lg galaxy-input">
+                                    <option value="egyptian">Egyptian (Masri)</option>
+                                    <option value="gulf">Gulf (Khaliji)</option>
+                                    <option value="levantine">Levantine (Shami)</option>
+                                    <option value="maghrebi">Maghrebi (Darija)</option>
+                                    <option value="iraqi">Iraqi</option>
+                                    <option value="yemeni">Yemeni</option>
+                                    <option value="sudanese">Sudanese</option>
+                                    <option value="fusha">Modern Standard (Fusha)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300">Number of Videos</label>
+                            <div class="mt-1 flex rounded-lg">
+                                <button type="button" id="decrement-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-l-lg">-</button>
+                                <span id="video-count-display" class="number-display w-full h-12 text-center text-lg font-semibold flex items-center justify-center">10</span>
+                                <button type="button" id="increment-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-r-lg">+</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="sheetUrl" class="block text-sm font-medium text-gray-300">Google Sheet URL</label>
+                            <input type="url" id="sheetUrl" name="sheetUrl" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Paste your target Google Sheet URL">
+                        </div>
+                    </div>
+                    <button id="submit-button" type="submit" class="mt-10 w-full text-white font-bold py-3 px-4 rounded-lg galaxy-button flex items-center justify-center space-x-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span id="button-text">Launch Workflow</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Success/Error Views -->
+        <div id="response-view" class="hidden">
+             <div class="glass-card p-8 rounded-2xl shadow-2xl text-center">
+                <div id="success-content">
+                    <svg class="w-16 h-16 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 class="text-2xl font-bold text-white mt-4">Workflow Launched!</h2>
+                    <p class="text-gray-300 mt-2">Your request has been sent to n8n. The results will appear in your designated Google Sheet shortly.</p>
+                </div>
+                <div id="error-content" class="hidden">
+                    <svg class="w-16 h-16 mx-auto text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 class="text-2xl font-bold text-white mt-4">Launch Failed</h2>
+                    <p id="error-message" class="text-gray-300 mt-2">Could not send the request to the workflow. Please check the console for details.</p>
+                </div>
+                <button id="reset-button" class="mt-8 w-1/2 mx-auto text-white font-semibold py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 transition-colors">
+                    Try Again
                 </button>
-            </div>
-        </div>
-
-        <button id="loginBtn" class="neon-btn">
-            Unlock
-        </button>
-    </div>
-
-    <div id="mainScreen" class="glass p-8 rounded-xl w-full max-w-lg hidden">
-        <h1 class="heading-font text-3xl mb-6 text-center text-white">
-            WOLVER'S HUB
-        </h1>
-        
-        <div class="space-y-4 mb-6">
-            <div>
-                <label for="username" class="block mb-1 text-sm font-medium text-white">
-                    Competitor TikTok Username
-                </label>
-                <input
-                    type="text"
-                    id="username"
-                    class="form-input"
-                    placeholder="e.g., islamabuauf"
-                />
-            </div>
-            
-            <div>
-                <label for="videoCount" class="block mb-1 text-sm font-medium text-white">
-                    Number of Videos
-                </label>
-                <input
-                    type="number"
-                    id="videoCount"
-                    class="form-input"
-                    placeholder="e.g., 60"
-                    value="60"
-                />
-            </div>
-            
-            <div>
-                <label for="sheetUrl" class="block mb-1 text-sm font-medium text-white">
-                    Google Sheet URL
-                </label>
-                <input
-                    type="text"
-                    id="sheetUrl"
-                    class="form-input"
-                    placeholder="e.g., https://docs.google.com/spreadsheets/d/..."
-                />
-            </div>
-        </div>
-
-        <button id="initiateBtn" class="neon-btn">
-            INITIATE ANALYSIS
-        </button>
-        
-        <div class="mt-4 text-center text-sm opacity-90 min-h-[60px]">
-            <p id="status" class="text-white"></p>
-            <div id="result" class="mt-2 font-semibold"></div>
+             </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            /* ---------- CONSTANTS ---------- */
-            const STORED_B64 = 'Tm91cmE='; // "Noura" in Base64
-            const COOKIE_NAME = 'wolverAuth';
-            const STORAGE_PREFIX = 'wolver_';
-            const N8N_WEBHOOK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook-test/3530fd0a-a05f-417a-980b-7b636ad10c4d';
+        // --- CONFIGURATION ---
+        const CREATE_TASK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook-test/4a6a6eb0-3366-4503-abcc-eee9c1707069';
+        const PASSWORD_B64 = 'Tm91cmE='; // "Noura" in Base64
+        const COOKIE_NAME = 'wolver_hub_auth_session';
 
-            /* ---------- UTILITY FUNCTIONS ---------- */
-            function setCookie(name, value, days) {
+        // --- DOM ELEMENTS ---
+        const loginView = document.getElementById('login-view');
+        const formView = document.getElementById('form-view');
+        const responseView = document.getElementById('response-view');
+        const successContent = document.getElementById('success-content');
+        const errorContent = document.getElementById('error-content');
+        const errorMessage = document.getElementById('error-message');
+        
+        const loginForm = document.getElementById('login-form');
+        const passwordInput = document.getElementById('password');
+        const loginError = document.getElementById('login-error');
+
+        const analyzeForm = document.getElementById('analyzeForm');
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const resetButton = document.getElementById('reset-button');
+
+        const videoCountDisplay = document.getElementById('video-count-display');
+        const decrementBtn = document.getElementById('decrement-btn');
+        const incrementBtn = document.getElementById('increment-btn');
+        const dialectSelect = document.getElementById('dialect-select');
+
+        // --- UTILITY FUNCTIONS ---
+        const setCookie = (name, value, days) => {
+            let expires = "";
+            if (days) {
                 const date = new Date();
-                date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-                document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/; SameSite=Strict; secure;`;
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax; Secure";
+        };
+
+        const getCookie = (name) => {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        };
+
+        // --- INITIALIZATION ---
+        if (getCookie(COOKIE_NAME)) {
+            loginView.classList.add('hidden');
+            formView.classList.remove('hidden');
+        }
+
+        // --- EVENT LISTENERS ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            loginError.textContent = '';
+            if (btoa(passwordInput.value) === PASSWORD_B64) {
+                setCookie(COOKIE_NAME, 'true', 1);
+                loginView.classList.add('hidden');
+                formView.classList.remove('hidden');
+            } else {
+                loginError.textContent = 'Access key is incorrect.';
+                passwordInput.value = '';
+            }
+        });
+
+        analyzeForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            submitButton.disabled = true;
+            buttonText.textContent = 'Launching...';
+
+            const keyword = document.getElementById("keyword").value.trim();
+            const count = videoCountDisplay.textContent;
+            const sheetUrl = document.getElementById("sheetUrl").value.trim();
+            const dialect = dialectSelect.value;
+            const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            const sheetId = match ? match[1] : null;
+
+            if (!sheetId) {
+                showResponse(false, "Invalid Google Sheet URL.");
+                return;
             }
 
-            function getCookie(name) {
-                const cookie = document.cookie
-                    .split(';')
-                    .map(c => c.trim())
-                    .find(c => c.startsWith(`${name}=`));
-                
-                return cookie ? cookie.split('=')[1] : null;
-            }
-            
-            function extractSheetIdFromUrl(url) {
-                if (!url) return null;
-                const match = url.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-                return match ? match[1] : null;
-            }
+            const formData = new FormData();
+            formData.append('keyword', keyword);
+            formData.append('count', count);
+            formData.append('sheetUrl', sheetUrl);
+            formData.append('sheetId', sheetId);
+            formData.append('dialect', dialect); // Add the selected dialect to the payload
 
-            function saveFormData() {
-                localStorage.setItem(`${STORAGE_PREFIX}username`, usernameInput.value);
-                localStorage.setItem(`${STORAGE_PREFIX}videoCount`, videoCountInput.value);
-                localStorage.setItem(`${STORAGE_PREFIX}sheetUrl`, sheetUrlInput.value);
-            }
-
-            function loadFormData() {
-                usernameInput.value = localStorage.getItem(`${STORAGE_PREFIX}username`) || '';
-                videoCountInput.value = localStorage.getItem(`${STORAGE_PREFIX}videoCount`) || '60';
-                sheetUrlInput.value = localStorage.getItem(`${STORAGE_PREFIX}sheetUrl`) || '';
-            }
-
-            /* ---------- DOM ELEMENTS ---------- */
-            const loginScreen = document.getElementById('loginScreen');
-            const mainScreen = document.getElementById('mainScreen');
-            const passwordInput = document.getElementById('password');
-            const togglePassword = document.getElementById('togglePassword');
-            const eyeOpen = document.getElementById('eyeOpen');
-            const eyeClosed = document.getElementById('eyeClosed');
-            const loginBtn = document.getElementById('loginBtn');
-            
-            const usernameInput = document.getElementById('username');
-            const videoCountInput = document.getElementById('videoCount');
-            const sheetUrlInput = document.getElementById('sheetUrl');
-            const initiateBtn = document.getElementById('initiateBtn');
-            const statusEl = document.getElementById('status');
-            const resultEl = document.getElementById('result');
-
-            /* ---------- AUDIO MANAGEMENT ---------- */
-            let audioReady = false;
-            let synthesizers = null;
-
-            async function initAudio() {
-                if (audioReady) return;
-                
-                try {
-                    await Tone.start();
-                    
-                    synthesizers = {
-                        synth: new Tone.Synth().toDestination(),
-                        errSynth: new Tone.Synth({ 
-                            oscillator: { type: 'square' } 
-                        }).toDestination(),
-                        clickSynth: new Tone.Synth({ 
-                            oscillator: { type: 'triangle' }, 
-                            envelope: { decay: 0.05, release: 0.1 } 
-                        }).toDestination(),
-                        failSynth: new Tone.Synth({ 
-                            oscillator: { type: 'sawtooth' } 
-                        }).toDestination()
-                    };
-                    
-                    audioReady = true;
-                } catch (error) {
-                    console.error('Failed to initialize audio:', error);
-                    audioReady = false;
-                }
-            }
-
-            async function playAudio(fn) {
-                if (audioReady && synthesizers) {
-                    try {
-                        fn();
-                    } catch (error) {
-                        console.error('Audio playback error:', error);
-                    }
-                }
-            }
-
-            async function chime() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    const notes = ['C5', 'E5', 'G5', 'C6'];
-                    notes.forEach((note, i) => {
-                        synthesizers.synth.triggerAttackRelease(note, 0.15, `+${i * 0.15}`);
-                    });
+            try {
+                const response = await fetch(CREATE_TASK_URL, {
+                    method: "POST",
+                    body: formData 
                 });
-            }
 
-            async function errorBuzz() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    synthesizers.errSynth.triggerAttackRelease('C2', 0.2);
-                });
-            }
-
-            async function clickSound() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    synthesizers.clickSynth.triggerAttackRelease('C6', 0.05);
-                });
-            }
-
-            async function failTone() {
-                if (!synthesizers) return;
-                
-                await playAudio(() => {
-                    const notes = ['C4', 'G3', 'E3', 'C3'];
-                    notes.forEach((note, i) => {
-                        synthesizers.failSynth.triggerAttackRelease(note, 0.2, `+${i * 0.15}`);
-                    });
-                });
-            }
-
-            /* ---------- WEBHOOK UTILITIES ---------- */
-            async function createReturnChannel() {
-                const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const targetUrl = encodeURIComponent('https://webhook.site/token');
-                
-                const response = await fetch(proxyUrl + targetUrl, { method: 'POST' });
-                
                 if (!response.ok) {
-                    throw new Error('Could not create return channel.');
+                    throw new Error(`n8n workflow responded with an error: ${response.status} ${response.statusText}`);
                 }
                 
-                const tokenData = await response.json();
-                return `https://webhook.site/${tokenData.uuid}`;
+                showResponse(true);
+
+            } catch (error) {
+                console.error("Initiation Error:", error);
+                showResponse(false, error.message);
+            }
+        });
+
+        function showResponse(isSuccess, message = '') {
+            formView.classList.add('hidden');
+            responseView.classList.remove('hidden');
+            if (isSuccess) {
+                successContent.classList.remove('hidden');
+                errorContent.classList.add('hidden');
+            } else {
+                successContent.classList.add('hidden');
+                errorContent.classList.remove('hidden');
+                errorMessage.textContent = message;
+            }
+        }
+
+        resetButton.addEventListener('click', () => {
+            responseView.classList.add('hidden');
+            formView.classList.remove('hidden');
+            
+            analyzeForm.reset();
+            videoCountDisplay.textContent = '10';
+            submitButton.disabled = false;
+            buttonText.textContent = 'Launch Workflow';
+        });
+
+        // Number input control logic
+        incrementBtn.addEventListener('click', () => {
+            videoCountDisplay.textContent = parseInt(videoCountDisplay.textContent) + 1;
+        });
+
+        decrementBtn.addEventListener('click', () => {
+            let currentCount = parseInt(videoCountDisplay.textContent);
+            if (currentCount > 1) {
+                videoCountDisplay.textContent = currentCount - 1;
+            }
+        });
+
+        // --- INTERACTIVE STARS BACKGROUND SCRIPT ---
+        const canvas = document.getElementById('stars-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        let mouse = { x: null, y: null };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars(); // Re-initialize stars on resize to fit new dimensions
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+        
+        class Star {
+            constructor(x, y, radius, vx, vy) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.vx = vx;
+                this.vy = vy;
+                this.baseRadius = radius;
+                this.opacity = Math.random() * 0.5 + 0.2;
             }
 
-            async function pollForResult(uuid, onResult, onError) {
-                let isPolling = true;
-                let pollCount = 0;
-                const maxPolls = 120; // 10 minutes with 5-second intervals
-                
-                const poll = async () => {
-                    if (!isPolling || pollCount >= maxPolls) {
-                        if (pollCount >= maxPolls) {
-                            onError(new Error('Timeout: No result received within 10 minutes'));
-                        }
-                        return;
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+
+            update() {
+                // Mouse interaction
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 100) {
+                        // Push star away from cursor
+                        this.x -= dx / 20;
+                        this.y -= dy / 20;
                     }
-                    
-                    try {
-                        const proxyUrl = 'https://api.allorigins.win/get?url=';
-                        const targetUrl = encodeURIComponent(`https://webhook.site/token/${uuid}/requests?sorting=newest`);
-                        
-                        const response = await fetch(proxyUrl + targetUrl);
-                        
-                        if (!response.ok) {
-                            throw new Error('Failed to check for results');
-                        }
-                        
-                        const data = await response.json();
-                        const requests = JSON.parse(data.contents);
-                        
-                        // Look for POST requests with content
-                        const postRequest = requests.data?.find((req) => 
-                            req.method === 'POST' && req.content
-                        );
-                        
-                        if (postRequest) {
-                            try {
-                                const resultPayload = JSON.parse(postRequest.content);
-                                if (resultPayload?.docUrl) {
-                                    onResult(resultPayload);
-                                    return;
-                                }
-                            } catch (parseError) {
-                                console.error('Error parsing result:', parseError);
-                            }
-                        }
-                        
-                        pollCount++;
-                        if (isPolling) {
-                            setTimeout(poll, 5000); // Poll every 5 seconds
-                        }
-                        
-                    } catch (error) {
-                        onError(error);
-                    }
-                };
-                
-                // Start polling
-                setTimeout(poll, 2000); // Initial delay of 2 seconds
-                
-                // Return cleanup function
-                return () => {
-                    isPolling = false;
-                };
-            }
-
-            async function sendToN8n(payload) {
-                return fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            }
-
-            /* ---------- VIEW MANAGEMENT ---------- */
-            function showMainScreen() {
-                loginScreen.classList.add('hidden');
-                mainScreen.classList.remove('hidden');
-                loadFormData();
-            }
-
-            function isAuthenticated() {
-                return getCookie(COOKIE_NAME) === '1';
-            }
-
-            function setAuthenticated() {
-                setCookie(COOKIE_NAME, '1', 7);
-            }
-
-            /* ---------- EVENT HANDLERS ---------- */
-            let cleanupPolling = null;
-
-            // Check authentication on load
-            if (isAuthenticated()) {
-                showMainScreen();
-            }
-
-            // Password toggle
-            togglePassword.addEventListener('click', () => {
-                const isPassword = passwordInput.type === 'password';
-                passwordInput.type = isPassword ? 'text' : 'password';
-                eyeOpen.style.display = isPassword ? 'none' : 'block';
-                eyeClosed.style.display = isPassword ? 'block' : 'none';
-            });
-
-            // Login functionality
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    loginBtn.click();
-                }
-            });
-
-            loginBtn.addEventListener('click', async () => {
-                await initAudio();
-                
-                if (btoa(passwordInput.value) === STORED_B64) {
-                    await chime();
-                    setAuthenticated();
-                    showMainScreen();
-                } else {
-                    await errorBuzz();
-                    passwordInput.value = '';
-                }
-            });
-
-            // Main functionality
-            initiateBtn.addEventListener('click', async () => {
-                await initAudio();
-                await clickSound();
-
-                // Clear previous results and disable the button
-                statusEl.textContent = '';
-                resultEl.innerHTML = '';
-                initiateBtn.disabled = true;
-
-                // Validate user inputs
-                const sheetUrl = sheetUrlInput.value.trim();
-                const sheetId = extractSheetIdFromUrl(sheetUrl);
-                
-                const payload = {
-                    username: usernameInput.value.trim(),
-                    videoCount: parseInt(videoCountInput.value.trim(), 10),
-                    sheetUrl: sheetUrl,
-                    sheetId: sheetId
-                };
-
-                if (!payload.username || !payload.videoCount || !payload.sheetUrl) {
-                    await errorBuzz();
-                    statusEl.textContent = 'All fields are required.';
-                    initiateBtn.disabled = false;
-                    return;
-                }
-                
-                if (!payload.sheetId) {
-                    await errorBuzz();
-                    statusEl.textContent = 'Invalid Google Sheet URL. Please check and try again.';
-                    initiateBtn.disabled = false;
-                    return;
                 }
 
-                saveFormData();
+                // Movement
+                this.x += this.vx;
+                this.y += this.vy;
 
-                try {
-                    // Create a new return URL from webhook.site
-                    statusEl.textContent = 'Generating secure return channel...';
-                    const returnUrl = await createReturnChannel();
-                    const uuid = returnUrl.split('/').pop();
+                // Wall collision
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
 
-                    // Start polling for the result from the n8n automation
-                    statusEl.textContent = 'Listening for result...';
-                    cleanupPolling = await pollForResult(
-                        uuid,
-                        (resultPayload) => {
-                            chime();
-                            statusEl.textContent = 'Success! Analysis complete.';
-                            resultEl.innerHTML = `<a href="${resultPayload.docUrl}" target="_blank" class="text-blue-400 hover:underline">View Generated Google Doc</a>`;
-                            initiateBtn.disabled = false;
-                            if(cleanupPolling) cleanupPolling();
-                        },
-                        (error) => {
-                            failTone();
-                            console.error('Polling failed:', error);
-                            statusEl.textContent = `Connection error: ${error.message}`;
-                            initiateBtn.disabled = false;
-                            if(cleanupPolling) cleanupPolling();
-                        }
-                    );
+                this.draw();
+            }
+        }
 
-                    // Send the request to n8n automation
-                    statusEl.textContent = 'Sending request to automation... This may take a few minutes.';
-                    const finalPayload = { ...payload, returnUrl };
+        function initStars() {
+            stars = [];
+            let numberOfStars = (canvas.width * canvas.height) / 9000;
+            for (let i = 0; i < numberOfStars; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let radius = Math.random() * 1.5;
+                let vx = (Math.random() - 0.5) * 0.2;
+                let vy = (Math.random() - 0.5) * 0.2;
+                stars.push(new Star(x, y, radius, vx, vy));
+            }
+        }
 
-                    const n8nResponse = await sendToN8n(finalPayload);
+        function animate() {
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                stars.forEach(star => star.update());
+            }
+            requestAnimationFrame(animate);
+        }
 
-                    if (!n8nResponse.ok) {
-                        throw new Error('Failed to send request to the automation.');
-                    }
-
-                    statusEl.textContent = 'Request sent successfully. Waiting for results...';
-
-                } catch (error) {
-                    await failTone();
-                    statusEl.textContent = `An error occurred: ${error.message}`;
-                    if (cleanupPolling) cleanupPolling();
-                    initiateBtn.disabled = false;
-                }
-            });
-
-            // Cleanup on page unload
-            window.addEventListener('beforeunload', () => {
-                if (cleanupPolling) cleanupPolling();
-            });
-
-        })();
+        initStars();
+        animate();
     </script>
 </body>
 </html>
