@@ -1,1111 +1,520 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>WOLVER'S HUB - Task Initiator</title>
-
     
-
     <!-- Tailwind CSS for styling -->
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     
-
     <style>
-
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
         
-
         body {
-
             font-family: 'Inter', sans-serif;
-
             background-color: #020617; /* Very dark blue */
-
             overflow: hidden; /* Hide scrollbars caused by canvas */
-
         }
-
-
 
         /* --- Interactive Stars Background --- */
-
         #stars-canvas {
-
             position: fixed;
-
             top: 0;
-
             left: 0;
-
             width: 100%;
-
             height: 100%;
-
             z-index: -1; /* Place it behind all content */
-
         }
-
-
 
         /* --- Glassmorphism Card --- */
-
         .glass-card {
-
             background: rgba(17, 24, 39, 0.6);
-
             backdrop-filter: blur(16px);
-
             -webkit-backdrop-filter: blur(16px);
-
             border: 1px solid rgba(128, 137, 162, 0.15);
-
         }
-
-
 
         /* --- Input Styling --- */
-
         .galaxy-input {
-
             background-color: rgba(13, 17, 23, 0.8);
-
             border: 1px solid #30363d;
-
             color: #c9d1d9;
-
             transition: all 0.2s ease-in-out;
-
             -webkit-appearance: none; /* Removes default Safari styling */
-
             -moz-appearance: none; /* Removes default Firefox styling */
-
             appearance: none; /* Removes default browser styling */
-
         }
-
         .galaxy-input::placeholder {
-
             color: #8b949e;
-
         }
-
         .galaxy-input:focus {
-
             outline: none;
-
             border-color: #a78bfa;
-
             box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
-
         }
-
         .select-wrapper {
-
             position: relative;
-
         }
-
         .select-wrapper::after {
-
             content: '▼';
-
             font-size: 1rem;
-
             color: #9ca3af;
-
             position: absolute;
-
             right: 1rem;
-
             top: 50%;
-
             transform: translateY(-50%);
-
             pointer-events: none;
-
         }
-
-        
 
         /* --- Radio Button Styling --- */
-
         .radio-option {
-
-            background-color: rgba(13, 17, 23, 0.8);
-
-            border: 1px solid #30363d;
-
-            transition: all 0.2s ease-in-out;
-
             cursor: pointer;
-
+            transition: all 0.2s ease;
         }
-
-        .radio-option:hover {
-
-            border-color: #a78bfa;
-
-        }
-
-        .radio-option.selected {
-
-            border-color: #a78bfa;
-
-            background-color: rgba(167, 139, 250, 0.1);
-
-        }
-
         .radio-option input[type="radio"] {
-
-            display: none;
-
+            accent-color: #a78bfa;
         }
-
-        .radio-option .radio-dot {
-
-            width: 20px;
-
-            height: 20px;
-
-            border: 2px solid #4b5563;
-
-            border-radius: 50%;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            transition: all 0.2s ease-in-out;
-
-        }
-
-        .radio-option.selected .radio-dot {
-
-            border-color: #a78bfa;
-
-        }
-
-        .radio-option.selected .radio-dot::after {
-
-            content: '';
-
-            width: 10px;
-
-            height: 10px;
-
-            background-color: #a78bfa;
-
-            border-radius: 50%;
-
-        }
-
-
 
         /* --- Main Button Styling --- */
-
         .galaxy-button {
-
             background-image: linear-gradient(to right, #818cf8, #a78bfa, #c084fc);
-
             background-size: 200% auto;
-
             transition: all 0.3s ease-in-out;
-
             border: none;
-
         }
-
         .galaxy-button:hover {
-
             background-position: right center;
-
             box-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
-
         }
-
         .galaxy-button:disabled {
-
             background-image: none;
-
             background-color: #374151;
-
             cursor: not-allowed;
-
             opacity: 0.7;
-
         }
-
-
 
         /* --- Fancy Number Input Styling --- */
-
         .number-control-button {
-
             background-color: #374151;
-
             color: #e5e7eb;
-
             border: 1px solid #4b5563;
-
             transition: all 0.2s ease;
-
         }
-
         .number-control-button:hover {
-
             background-color: #4b5563;
-
             border-color: #6b7280;
-
         }
-
         .number-display {
-
             color: #f9fafb;
-
             background-color: rgba(13, 17, 23, 0.8);
-
             border-top: 1px solid #30363d;
-
             border-bottom: 1px solid #30363d;
-
         }
 
+        /* --- Hide/Show Animation --- */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
-
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-4">
 
-
-
     <canvas id="stars-canvas"></canvas>
 
-
-
     <div class="w-full max-w-lg">
-
         <!-- Login View -->
-
         <div id="login-view">
-
             <div class="glass-card p-8 rounded-2xl shadow-2xl">
-
                 <h1 class="text-3xl font-bold text-center text-white mb-2">WOLVER'S HUB</h1>
-
                 <p class="text-center text-gray-400 mb-8">Secure Access</p>
-
                 <form id="login-form">
-
                     <div class="mb-4">
-
                         <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-
                         <input type="password" id="password" name="password" required class="w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter access key">
-
                     </div>
-
                     <p id="login-error" class="text-red-400 text-sm text-center mb-4 h-5"></p>
-
                     <button type="submit" class="w-full text-white font-bold py-3 px-4 rounded-lg galaxy-button">
-
                         Authenticate
-
                     </button>
-
                 </form>
-
             </div>
-
         </div>
-
-
 
         <!-- Main App View -->
-
         <div id="form-view" class="hidden">
-
             <div class="glass-card p-8 rounded-2xl shadow-2xl">
-
                 <h1 class="text-3xl font-bold text-center text-white mb-2">WOLVER'S HUB</h1>
-
                 <p class="text-center text-gray-400 mb-8">Launch your n8n automation workflow.</p>
 
-
-
                 <form id="analyzeForm">
-
                     <div class="space-y-6">
-
                         <!-- Search Type Selection -->
-
                         <div>
-
                             <label class="block text-sm font-medium text-gray-300 mb-3">Search Type</label>
-
-                            <div class="grid grid-cols-2 gap-3">
-
-                                <label class="radio-option selected p-3 rounded-lg flex items-center space-x-3">
-
-                                    <input type="radio" name="searchType" value="keyword" checked>
-
-                                    <div class="radio-dot"></div>
-
-                                    <span class="text-gray-300 text-sm">Keyword</span>
-
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="radio-option flex items-center space-x-3">
+                                    <input type="radio" name="searchType" value="keyword" checked class="w-4 h-4">
+                                    <span class="text-gray-300">TikTok Keyword</span>
                                 </label>
-
-                                <label class="radio-option p-3 rounded-lg flex items-center space-x-3">
-
-                                    <input type="radio" name="searchType" value="profile">
-
-                                    <div class="radio-dot"></div>
-
-                                    <span class="text-gray-300 text-sm">Profile</span>
-
+                                <label class="radio-option flex items-center space-x-3">
+                                    <input type="radio" name="searchType" value="profile" class="w-4 h-4">
+                                    <span class="text-gray-300">TikTok Profile</span>
                                 </label>
-
                             </div>
-
                         </div>
 
-
-
-                        <!-- Keyword Input -->
-
-                        <div id="keyword-section">
-
+                        <!-- Dynamic Input Fields -->
+                        <div id="keyword-field" class="fade-in">
                             <label for="keyword" class="block text-sm font-medium text-gray-300">TikTok Keyword</label>
-
                             <input type="text" id="keyword" name="keyword" class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter your search keyword...">
-
                         </div>
 
-
-
-                        <!-- Profile Input -->
-
-                        <div id="profile-section" class="hidden">
-
+                        <div id="profile-field" class="hidden">
                             <label for="profile" class="block text-sm font-medium text-gray-300">TikTok Profile</label>
-
                             <input type="text" id="profile" name="profile" class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter TikTok profile username...">
-
                         </div>
 
-
-
                         <div>
-
                             <label for="dialect-select" class="block text-sm font-medium text-gray-300">Arabic Dialect</label>
-
                             <div class="select-wrapper mt-1">
-
                                 <select id="dialect-select" name="dialect" class="w-full px-4 py-3 rounded-lg galaxy-input">
-
                                     <option value="egyptian">Egyptian (Masri)</option>
-
                                     <option value="gulf">Gulf (Khaliji)</option>
-
                                     <option value="levantine">Levantine (Shami)</option>
-
                                     <option value="maghrebi">Maghrebi (Darija)</option>
-
                                     <option value="iraqi">Iraqi</option>
-
                                     <option value="yemeni">Yemeni</option>
-
                                     <option value="sudanese">Sudanese</option>
-
                                     <option value="fusha">Modern Standard (Fusha)</option>
-
                                 </select>
-
                             </div>
-
                         </div>
-
                         
-
                         <div>
-
                             <label class="block text-sm font-medium text-gray-300">Number of Videos</label>
-
                             <div class="mt-1 flex rounded-lg">
-
                                 <button type="button" id="decrement-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-l-lg">-</button>
-
                                 <span id="video-count-display" class="number-display w-full h-12 text-center text-lg font-semibold flex items-center justify-center">10</span>
-
                                 <button type="button" id="increment-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-r-lg">+</button>
-
                             </div>
-
                         </div>
-
-
 
                         <div>
-
                             <label for="sheetUrl" class="block text-sm font-medium text-gray-300">Google Sheet URL</label>
-
                             <input type="url" id="sheetUrl" name="sheetUrl" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Paste your target Google Sheet URL">
-
                         </div>
-
                     </div>
-
                     <button id="submit-button" type="submit" class="mt-10 w-full text-white font-bold py-3 px-4 rounded-lg galaxy-button flex items-center justify-center space-x-2">
-
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-
                         <span id="button-text">Launch Workflow</span>
-
                     </button>
-
                 </form>
-
             </div>
-
         </div>
-
-
 
         <!-- Success/Error Views -->
-
         <div id="response-view" class="hidden">
-
              <div class="glass-card p-8 rounded-2xl shadow-2xl text-center">
-
                 <div id="success-content">
-
                     <svg class="w-16 h-16 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-
                     <h2 class="text-2xl font-bold text-white mt-4">Workflow Launched!</h2>
-
                     <p class="text-gray-300 mt-2">Your request has been sent to n8n. The results will appear in your designated Google Sheet shortly.</p>
-
                 </div>
-
                 <div id="error-content" class="hidden">
-
                     <svg class="w-16 h-16 mx-auto text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-
                     <h2 class="text-2xl font-bold text-white mt-4">Launch Failed</h2>
-
                     <p id="error-message" class="text-gray-300 mt-2">Could not send the request to the workflow. Please check the console for details.</p>
-
                 </div>
-
                 <button id="reset-button" class="mt-8 w-1/2 mx-auto text-white font-semibold py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 transition-colors">
-
                     Try Again
-
                 </button>
-
              </div>
-
         </div>
-
     </div>
 
-
-
     <script>
-
         // --- CONFIGURATION ---
-
-        const CREATE_TASK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook-test/4a6a6eb0-3366-4503-abcc-eee9c1707069';
-
+        const CREATE_TASK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook/4a6a6eb0-3366-4503-abcc-eee9c1707069';
         const PASSWORD_B64 = 'Tm91cmE='; // "Noura" in Base64
-
         const COOKIE_NAME = 'wolver_hub_auth_session';
 
-
-
         // --- DOM ELEMENTS ---
-
         const loginView = document.getElementById('login-view');
-
         const formView = document.getElementById('form-view');
-
         const responseView = document.getElementById('response-view');
-
         const successContent = document.getElementById('success-content');
-
         const errorContent = document.getElementById('error-content');
-
         const errorMessage = document.getElementById('error-message');
-
         
-
         const loginForm = document.getElementById('login-form');
-
         const passwordInput = document.getElementById('password');
-
         const loginError = document.getElementById('login-error');
 
-
-
         const analyzeForm = document.getElementById('analyzeForm');
-
         const submitButton = document.getElementById('submit-button');
-
         const buttonText = document.getElementById('button-text');
-
         const resetButton = document.getElementById('reset-button');
 
-
-
         const videoCountDisplay = document.getElementById('video-count-display');
-
         const decrementBtn = document.getElementById('decrement-btn');
-
         const incrementBtn = document.getElementById('increment-btn');
-
         const dialectSelect = document.getElementById('dialect-select');
 
-        
-
-        const keywordSection = document.getElementById('keyword-section');
-
-        const profileSection = document.getElementById('profile-section');
-
+        // Search type elements
+        const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
+        const keywordField = document.getElementById('keyword-field');
+        const profileField = document.getElementById('profile-field');
         const keywordInput = document.getElementById('keyword');
-
         const profileInput = document.getElementById('profile');
 
-        const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
-
-        const radioOptions = document.querySelectorAll('.radio-option');
-
-
-
         // --- UTILITY FUNCTIONS ---
-
         const setCookie = (name, value, days) => {
-
             let expires = "";
-
             if (days) {
-
                 const date = new Date();
-
                 date.setTime(date.getTime() + (days*24*60*60*1000));
-
                 expires = "; expires=" + date.toUTCString();
-
             }
-
             document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax; Secure";
-
         };
-
-
 
         const getCookie = (name) => {
-
             const nameEQ = name + "=";
-
             const ca = document.cookie.split(';');
-
             for(let i=0;i < ca.length;i++) {
-
                 let c = ca[i];
-
                 while (c.charAt(0)==' ') c = c.substring(1,c.length);
-
                 if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-
             }
-
             return null;
-
         };
 
-
+        // --- SEARCH TYPE TOGGLE FUNCTION ---
+        const toggleSearchType = () => {
+            const selectedType = document.querySelector('input[name="searchType"]:checked').value;
+            
+            if (selectedType === 'keyword') {
+                keywordField.classList.remove('hidden');
+                keywordField.classList.add('fade-in');
+                profileField.classList.add('hidden');
+                keywordInput.required = true;
+                profileInput.required = false;
+                profileInput.value = ''; // Clear profile when switching to keyword
+            } else {
+                profileField.classList.remove('hidden');
+                profileField.classList.add('fade-in');
+                keywordField.classList.add('hidden');
+                profileInput.required = true;
+                keywordInput.required = false;
+                keywordInput.value = ''; // Clear keyword when switching to profile
+            }
+        };
 
         // --- INITIALIZATION ---
-
         if (getCookie(COOKIE_NAME)) {
-
             loginView.classList.add('hidden');
-
             formView.classList.remove('hidden');
-
         }
-
-
-
-        // --- SEARCH TYPE TOGGLE ---
-
-        function toggleSearchType() {
-
-            const selectedType = document.querySelector('input[name="searchType"]:checked').value;
-
-            
-
-            if (selectedType === 'keyword') {
-
-                keywordSection.classList.remove('hidden');
-
-                profileSection.classList.add('hidden');
-
-                keywordInput.setAttribute('required', 'required');
-
-                profileInput.removeAttribute('required');
-
-            } else {
-
-                keywordSection.classList.add('hidden');
-
-                profileSection.classList.remove('hidden');
-
-                profileInput.setAttribute('required', 'required');
-
-                keywordInput.removeAttribute('required');
-
-            }
-
-        }
-
-
-
-        // Radio button visual updates
-
-        radioOptions.forEach(option => {
-
-            option.addEventListener('click', function() {
-
-                radioOptions.forEach(opt => opt.classList.remove('selected'));
-
-                this.classList.add('selected');
-
-                this.querySelector('input[type="radio"]').checked = true;
-
-                toggleSearchType();
-
-            });
-
-        });
-
-
-
-        searchTypeRadios.forEach(radio => {
-
-            radio.addEventListener('change', toggleSearchType);
-
-        });
-
-
 
         // --- EVENT LISTENERS ---
+        
+        // Search type radio button listeners
+        searchTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleSearchType);
+        });
 
         loginForm.addEventListener('submit', (e) => {
-
             e.preventDefault();
-
             loginError.textContent = '';
-
             if (btoa(passwordInput.value) === PASSWORD_B64) {
-
                 setCookie(COOKIE_NAME, 'true', 1);
-
                 loginView.classList.add('hidden');
-
                 formView.classList.remove('hidden');
-
             } else {
-
                 loginError.textContent = 'Access key is incorrect.';
-
                 passwordInput.value = '';
-
             }
-
         });
-
-
 
         analyzeForm.addEventListener("submit", async function (e) {
-
             e.preventDefault();
-
             submitButton.disabled = true;
-
             buttonText.textContent = 'Launching...';
 
-
-
-            const searchType = document.querySelector('input[name="searchType"]:checked').value;
-
             const keyword = keywordInput.value.trim();
-
             const profile = profileInput.value.trim();
-
             const count = videoCountDisplay.textContent;
-
             const sheetUrl = document.getElementById("sheetUrl").value.trim();
-
             const dialect = dialectSelect.value;
-
             const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-
             const sheetId = match ? match[1] : null;
 
-
-
             if (!sheetId) {
-
                 showResponse(false, "Invalid Google Sheet URL.");
-
                 return;
-
             }
-
-
 
             const formData = new FormData();
-
-            
-
-            // Always send both fields, but only populate the selected one
-
-            if (searchType === 'keyword') {
-
-                formData.append('keyword', keyword);
-
-                formData.append('profile', ''); // Empty profile
-
-            } else {
-
-                formData.append('keyword', ''); // Empty keyword
-
-                formData.append('profile', profile);
-
-            }
-
-            
-
-            formData.append('searchType', searchType);
-
+            // Always send both keyword and profile fields
+            formData.append('keyword', keyword);
+            formData.append('profile', profile);
             formData.append('count', count);
-
             formData.append('sheetUrl', sheetUrl);
-
             formData.append('sheetId', sheetId);
-
             formData.append('dialect', dialect);
 
-
-
             try {
-
                 const response = await fetch(CREATE_TASK_URL, {
-
                     method: "POST",
-
                     body: formData 
-
                 });
 
-
-
                 if (!response.ok) {
-
                     throw new Error(`n8n workflow responded with an error: ${response.status} ${response.statusText}`);
-
                 }
-
                 
-
                 showResponse(true);
 
-
-
             } catch (error) {
-
                 console.error("Initiation Error:", error);
-
                 showResponse(false, error.message);
-
             }
-
         });
-
-
 
         function showResponse(isSuccess, message = '') {
-
             formView.classList.add('hidden');
-
             responseView.classList.remove('hidden');
-
             if (isSuccess) {
-
                 successContent.classList.remove('hidden');
-
                 errorContent.classList.add('hidden');
-
             } else {
-
                 successContent.classList.add('hidden');
-
                 errorContent.classList.remove('hidden');
-
                 errorMessage.textContent = message;
-
             }
-
         }
-
-
 
         resetButton.addEventListener('click', () => {
-
             responseView.classList.add('hidden');
-
             formView.classList.remove('hidden');
-
             
-
             analyzeForm.reset();
-
             videoCountDisplay.textContent = '10';
-
             submitButton.disabled = false;
-
             buttonText.textContent = 'Launch Workflow';
-
             
-
-            // Reset radio buttons visual state
-
-            radioOptions.forEach(opt => opt.classList.remove('selected'));
-
-            radioOptions[0].classList.add('selected'); // Select first option (keyword)
-
+            // Reset to keyword search type
+            document.querySelector('input[name="searchType"][value="keyword"]').checked = true;
             toggleSearchType();
-
         });
-
-
 
         // Number input control logic
-
         incrementBtn.addEventListener('click', () => {
-
             videoCountDisplay.textContent = parseInt(videoCountDisplay.textContent) + 1;
-
         });
-
-
 
         decrementBtn.addEventListener('click', () => {
-
             let currentCount = parseInt(videoCountDisplay.textContent);
-
             if (currentCount > 1) {
-
                 videoCountDisplay.textContent = currentCount - 1;
-
             }
-
         });
-
-
 
         // --- INTERACTIVE STARS BACKGROUND SCRIPT ---
-
         const canvas = document.getElementById('stars-canvas');
-
         const ctx = canvas.getContext('2d');
-
         let stars = [];
-
         let mouse = { x: null, y: null };
 
-
-
         function resizeCanvas() {
-
             canvas.width = window.innerWidth;
-
             canvas.height = window.innerHeight;
-
             initStars(); // Re-initialize stars on resize to fit new dimensions
-
         }
-
         resizeCanvas();
-
         window.addEventListener('resize', resizeCanvas);
 
-
-
         window.addEventListener('mousemove', (e) => {
-
             mouse.x = e.x;
-
             mouse.y = e.y;
-
         });
-
         window.addEventListener('mouseout', () => {
-
             mouse.x = null;
-
             mouse.y = null;
-
         });
-
         
-
         class Star {
-
             constructor(x, y, radius, vx, vy) {
-
                 this.x = x;
-
                 this.y = y;
-
                 this.radius = radius;
-
                 this.vx = vx;
-
                 this.vy = vy;
-
                 this.baseRadius = radius;
-
                 this.opacity = Math.random() * 0.5 + 0.2;
-
             }
-
-
 
             draw() {
-
                 ctx.beginPath();
-
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-
                 ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-
                 ctx.fill();
-
             }
-
-
 
             update() {
-
                 // Mouse interaction
-
                 if (mouse.x !== null && mouse.y !== null) {
-
                     let dx = mouse.x - this.x;
-
                     let dy = mouse.y - this.y;
-
                     let distance = Math.sqrt(dx * dx + dy * dy);
-
                     if (distance < 100) {
-
                         // Push star away from cursor
-
                         this.x -= dx / 20;
-
                         this.y -= dy / 20;
-
                     }
-
                 }
 
-
-
                 // Movement
-
                 this.x += this.vx;
-
                 this.y += this.vy;
 
-
-
                 // Wall collision
-
                 if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-
                 if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
 
-
-
                 this.draw();
-
             }
-
         }
-
-
 
         function initStars() {
-
             stars = [];
-
             let numberOfStars = (canvas.width * canvas.height) / 9000;
-
             for (let i = 0; i < numberOfStars; i++) {
-
                 let x = Math.random() * canvas.width;
-
                 let y = Math.random() * canvas.height;
-
                 let radius = Math.random() * 1.5;
-
                 let vx = (Math.random() - 0.5) * 0.2;
-
                 let vy = (Math.random() - 0.5) * 0.2;
-
                 stars.push(new Star(x, y, radius, vx, vy));
-
             }
-
         }
-
-
 
         function animate() {
-
             if (ctx) {
-
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-
                 stars.forEach(star => star.update());
-
             }
-
             requestAnimationFrame(animate);
-
         }
 
-
-
         initStars();
-
         animate();
-
     </script>
-
 </body>
-
 </html>
