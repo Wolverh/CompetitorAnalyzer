@@ -8,6 +8,9 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Tone.js for audio feedback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -15,6 +18,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #020617; /* Very dark blue */
             overflow: hidden; /* Hide scrollbars caused by canvas */
+            color: #e5e7eb;
         }
 
         /* --- Interactive Stars Background --- */
@@ -41,9 +45,9 @@
             border: 1px solid #30363d;
             color: #c9d1d9;
             transition: all 0.2s ease-in-out;
-            -webkit-appearance: none; /* Removes default Safari styling */
-            -moz-appearance: none; /* Removes default Firefox styling */
-            appearance: none; /* Removes default browser styling */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
         .galaxy-input::placeholder {
             color: #8b949e;
@@ -67,6 +71,22 @@
             pointer-events: none;
         }
 
+        /* --- Radio Button Styling --- */
+        .radio-option {
+            background-color: rgba(13, 17, 23, 0.8);
+            border: 1px solid #30363d;
+            transition: all 0.2s ease-in-out;
+        }
+        .radio-option:hover {
+            border-color: #6b7280;
+        }
+        .radio-option.selected {
+            border-color: #a78bfa;
+            background-color: rgba(167, 139, 250, 0.1);
+        }
+        .radio-input {
+            accent-color: #a78bfa;
+        }
 
         /* --- Main Button Styling --- */
         .galaxy-button {
@@ -103,13 +123,27 @@
             border-top: 1px solid #30363d;
             border-bottom: 1px solid #30363d;
         }
+        
+        /* Simple spinner animation */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #c084fc;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
     <canvas id="stars-canvas"></canvas>
 
-    <div class="w-full max-w-lg">
+    <div class="w-full max-w-md">
         <!-- Login View -->
         <div id="login-view">
             <div class="glass-card p-8 rounded-2xl shadow-2xl">
@@ -118,10 +152,10 @@
                 <form id="login-form">
                     <div class="mb-4">
                         <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                        <input type="password" id="password" name="password" required class="w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter access key">
+                        <input type="password" id="password" name="password" required class="w-full px-4 py-2 rounded-lg galaxy-input" placeholder="Enter access key">
                     </div>
-                    <p id="login-error" class="text-red-400 text-sm text-center mb-4 h-5"></p>
-                    <button type="submit" class="w-full text-white font-bold py-3 px-4 rounded-lg galaxy-button">
+                    <p id="login-error" class="text-red-400 text-sm text-center mb-4 h-4"></p>
+                    <button type="submit" class="w-full text-white font-bold py-2 px-4 rounded-lg galaxy-button">
                         Authenticate
                     </button>
                 </form>
@@ -130,21 +164,43 @@
 
         <!-- Main App View -->
         <div id="form-view" class="hidden">
-            <div class="glass-card p-8 rounded-2xl shadow-2xl">
-                <h1 class="text-3xl font-bold text-center text-white mb-2">WOLVER'S HUB</h1>
-                <p class="text-center text-gray-400 mb-8">Launch your n8n automation workflow.</p>
-
-                <form id="analyzeForm">
-                    <div class="space-y-6">
+            <div class="glass-card p-6 rounded-2xl shadow-2xl">
+                <h1 class="text-2xl font-bold text-center text-white mb-1">WOLVER'S HUB</h1>
+                <p class="text-center text-gray-400 mb-4">Launch your n8n automation workflow.</p>
+                <form id="analysis-form">
+                    <div class="space-y-3">
+                        <!-- TikTok Option Selection -->
                         <div>
-                            <label for="keyword" class="block text-sm font-medium text-gray-300">TikTok Keyword</label>
-                            <input type="text" id="keyword" name="keyword" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter your search keyword...">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">TikTok Search Type</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="radio-option p-2 rounded-lg cursor-pointer flex items-center" id="keyword-option-label">
+                                    <input type="radio" name="tiktok-type" value="keyword" class="radio-input mr-2 h-4 w-4" checked>
+                                    <span class="text-gray-300 font-medium text-sm">Keyword</span>
+                                </label>
+                                <label class="radio-option p-2 rounded-lg cursor-pointer flex items-center" id="profile-option-label">
+                                    <input type="radio" name="tiktok-type" value="profile" class="radio-input mr-2 h-4 w-4">
+                                    <span class="text-gray-300 font-medium text-sm">Profile</span>
+                                </label>
+                            </div>
                         </div>
+
+                        <!-- TikTok Keyword Input -->
+                        <div id="keyword-section">
+                            <label for="keyword-input" class="block text-sm font-medium text-gray-300">TikTok Keyword</label>
+                            <input type="text" id="keyword-input" name="keyword" class="mt-1 w-full px-4 py-2 rounded-lg galaxy-input" placeholder="Enter your search keyword...">
+                        </div>
+
+                        <!-- TikTok Profile Input -->
+                        <div id="profile-section" class="hidden">
+                            <label for="profile-input" class="block text-sm font-medium text-gray-300">TikTok Profile</label>
+                            <input type="text" id="profile-input" name="profile" class="mt-1 w-full px-4 py-2 rounded-lg galaxy-input" placeholder="@username">
+                        </div>
+                        <p id="search-input-error" class="text-sm text-red-400 h-4"></p>
 
                         <div>
                             <label for="dialect-select" class="block text-sm font-medium text-gray-300">Arabic Dialect</label>
                             <div class="select-wrapper mt-1">
-                                <select id="dialect-select" name="dialect" class="w-full px-4 py-3 rounded-lg galaxy-input">
+                                <select id="dialect-select" name="dialect" class="w-full px-4 py-2 rounded-lg galaxy-input">
                                     <option value="egyptian">Egyptian (Masri)</option>
                                     <option value="gulf">Gulf (Khaliji)</option>
                                     <option value="levantine">Levantine (Shami)</option>
@@ -160,48 +216,75 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-300">Number of Videos</label>
                             <div class="mt-1 flex rounded-lg">
-                                <button type="button" id="decrement-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-l-lg">-</button>
-                                <span id="video-count-display" class="number-display w-full h-12 text-center text-lg font-semibold flex items-center justify-center">10</span>
-                                <button type="button" id="increment-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-r-lg">+</button>
+                                <button type="button" id="decrement-btn" class="number-control-button font-bold w-9 h-9 text-lg rounded-l-lg">-</button>
+                                <span id="video-count-display" class="number-display w-full h-9 text-center text-base font-semibold flex items-center justify-center">10</span>
+                                <button type="button" id="increment-btn" class="number-control-button font-bold w-9 h-9 text-lg rounded-r-lg">+</button>
                             </div>
                         </div>
 
                         <div>
                             <label for="sheetUrl" class="block text-sm font-medium text-gray-300">Google Sheet URL</label>
-                            <input type="url" id="sheetUrl" name="sheetUrl" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Paste your target Google Sheet URL">
+                            <input type="url" id="sheetUrl" name="sheetUrl" required class="mt-1 w-full px-4 py-2 rounded-lg galaxy-input" placeholder="Paste your target Google Sheet URL">
+                            <p id="sheet-url-error" class="text-sm text-red-400 mt-1 h-4"></p>
                         </div>
                     </div>
-                    <button id="submit-button" type="submit" class="mt-10 w-full text-white font-bold py-3 px-4 rounded-lg galaxy-button flex items-center justify-center space-x-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <button id="submit-button" type="submit" class="mt-4 w-full text-white font-bold py-2 px-4 rounded-lg galaxy-button flex items-center justify-center space-x-3 disabled:space-x-0">
+                        <div id="button-spinner" class="spinner hidden"></div>
+                        <svg id="button-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         <span id="button-text">Launch Workflow</span>
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Success/Error Views -->
+        <!-- Status/Response View -->
         <div id="response-view" class="hidden">
              <div class="glass-card p-8 rounded-2xl shadow-2xl text-center">
-                <div id="success-content">
+                <!-- Success Content -->
+                <div id="success-content" class="hidden">
                     <svg class="w-16 h-16 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <h2 class="text-2xl font-bold text-white mt-4">Workflow Launched!</h2>
-                    <p class="text-gray-300 mt-2">Your request has been sent to n8n. The results will appear in your designated Google Sheet shortly.</p>
+                    <p class="text-gray-300 mt-2">Your request is being processed by n8n. The results will appear in your Google Sheet.</p>
                 </div>
+                <!-- Error Content -->
                 <div id="error-content" class="hidden">
                     <svg class="w-16 h-16 mx-auto text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <h2 class="text-2xl font-bold text-white mt-4">Launch Failed</h2>
-                    <p id="error-message" class="text-gray-300 mt-2">Could not send the request to the workflow. Please check the console for details.</p>
+                    <p id="error-message" class="text-gray-300 mt-2">Could not send the request. Please check the console for details.</p>
                 </div>
-                <button id="reset-button" class="mt-8 w-1/2 mx-auto text-white font-semibold py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 transition-colors">
+                 <!-- Waiting Content -->
+                <div id="waiting-content" class="hidden">
+                    <div class="flex justify-center items-center">
+                        <div class="spinner"></div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mt-4">Processing...</h2>
+                    <p class="text-gray-300 mt-2">This can take up to 12 minutes. Please keep this tab open. You will be notified upon completion.</p>
+                </div>
+
+                <button id="reset-button" class="mt-8 w-1/2 mx-auto text-white font-semibold py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 transition-colors hidden">
                     Try Again
                 </button>
              </div>
         </div>
     </div>
 
-    <script>
+    <!-- Hidden iframe for form submission -->
+    <iframe name="hidden-form-target" style="display:none;"></iframe>
+    <!-- Hidden form to trigger n8n -->
+    <form id="n8n-trigger-form" action="" method="POST" target="hidden-form-target" style="display:none;">
+        <input type="hidden" name="requestId" id="form-requestId">
+        <input type="hidden" name="appId" id="form-appId">
+    </form>
+
+
+    <script type="module">
+        // Import Firebase services
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // --- CONFIGURATION ---
-        const CREATE_TASK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook/4a6a6eb0-3366-4503-abcc-eee9c1707069';
+        const N8N_WEBHOOK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook-test/4a6a6eb0-3366-4503-abcc-eee9c1707069';
         const PASSWORD_B64 = 'Tm91cmE='; // "Noura" in Base64
         const COOKIE_NAME = 'wolver_hub_auth_session';
 
@@ -209,166 +292,329 @@
         const loginView = document.getElementById('login-view');
         const formView = document.getElementById('form-view');
         const responseView = document.getElementById('response-view');
+        
         const successContent = document.getElementById('success-content');
         const errorContent = document.getElementById('error-content');
+        const waitingContent = document.getElementById('waiting-content');
         const errorMessage = document.getElementById('error-message');
         
         const loginForm = document.getElementById('login-form');
         const passwordInput = document.getElementById('password');
         const loginError = document.getElementById('login-error');
 
-        const analyzeForm = document.getElementById('analyzeForm');
+        const analysisForm = document.getElementById('analysis-form');
         const submitButton = document.getElementById('submit-button');
         const buttonText = document.getElementById('button-text');
+        const buttonIcon = document.getElementById('button-icon');
+        const buttonSpinner = document.getElementById('button-spinner');
         const resetButton = document.getElementById('reset-button');
+
+        // TikTok option elements
+        const keywordOptionLabel = document.getElementById('keyword-option-label');
+        const profileOptionLabel = document.getElementById('profile-option-label');
+        const keywordSection = document.getElementById('keyword-section');
+        const profileSection = document.getElementById('profile-section');
+        const tiktokTypeRadios = document.querySelectorAll('input[name="tiktok-type"]');
 
         const videoCountDisplay = document.getElementById('video-count-display');
         const decrementBtn = document.getElementById('decrement-btn');
         const incrementBtn = document.getElementById('increment-btn');
         const dialectSelect = document.getElementById('dialect-select');
+        const sheetUrlInput = document.getElementById('sheetUrl');
+        const sheetUrlError = document.getElementById('sheet-url-error');
+        const searchInputError = document.getElementById('search-input-error');
 
-        // --- UTILITY FUNCTIONS ---
+        // --- FIREBASE GLOBALS ---
+        let db, auth, userId, appId;
+        let unsubscribeFromJob;
+
+        // --- AUDIO FEEDBACK ---
+        const successSound = new Tone.Synth().toDestination();
+        const errorSound = new Tone.Oscillator("C2", "sawtooth").toDestination();
+
+        // --- HELPER FUNCTIONS ---
         const setCookie = (name, value, days) => {
             let expires = "";
             if (days) {
                 const date = new Date();
-                date.setTime(date.getTime() + (days*24*60*60*1000));
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                 expires = "; expires=" + date.toUTCString();
             }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax; Secure";
+            document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax; Secure";
         };
 
         const getCookie = (name) => {
             const nameEQ = name + "=";
             const ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
+            for (let i = 0; i < ca.length; i++) {
                 let c = ca[i];
-                while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
             }
             return null;
         };
 
-        // --- INITIALIZATION ---
-        if (getCookie(COOKIE_NAME)) {
-            loginView.classList.add('hidden');
-            formView.classList.remove('hidden');
+        const extractSheetId = (url) => {
+            const regex = /spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        };
+        
+        // --- UI STATE FUNCTIONS ---
+        function setButtonLoading(isLoading, text = 'Launch Workflow') {
+            submitButton.disabled = isLoading;
+            buttonText.textContent = text;
+            if (isLoading) {
+                buttonIcon.classList.add('hidden');
+                buttonSpinner.classList.remove('hidden');
+            } else {
+                buttonIcon.classList.remove('hidden');
+                buttonSpinner.classList.add('hidden');
+            }
         }
 
-        // --- EVENT LISTENERS ---
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            loginError.textContent = '';
-            if (btoa(passwordInput.value) === PASSWORD_B64) {
-                setCookie(COOKIE_NAME, 'true', 1);
-                loginView.classList.add('hidden');
-                formView.classList.remove('hidden');
-            } else {
-                loginError.textContent = 'Access key is incorrect.';
-                passwordInput.value = '';
+        function showResponseView(state, message = '') {
+            formView.classList.add('hidden');
+            responseView.classList.remove('hidden');
+
+            // Hide all content sections first
+            successContent.classList.add('hidden');
+            errorContent.classList.add('hidden');
+            waitingContent.classList.add('hidden');
+            resetButton.classList.add('hidden');
+
+            switch(state) {
+                case 'waiting':
+                    waitingContent.classList.remove('hidden');
+                    break;
+                case 'success':
+                    successContent.classList.remove('hidden');
+                    resetButton.classList.remove('hidden');
+                    break;
+                case 'error':
+                    errorContent.classList.remove('hidden');
+                    errorMessage.textContent = message;
+                    resetButton.classList.remove('hidden');
+                    break;
             }
-        });
+        }
 
-        analyzeForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
-            submitButton.disabled = true;
-            buttonText.textContent = 'Launching...';
+        function toggleTikTokOption() {
+            const selectedType = document.querySelector('input[name="tiktok-type"]:checked').value;
+            
+            searchInputError.textContent = ''; // Clear errors on switch
 
-            const keyword = document.getElementById("keyword").value.trim();
-            const count = videoCountDisplay.textContent;
-            const sheetUrl = document.getElementById("sheetUrl").value.trim();
-            const dialect = dialectSelect.value;
-            const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-            const sheetId = match ? match[1] : null;
+            // Update visual styling
+            keywordOptionLabel.classList.remove('selected');
+            profileOptionLabel.classList.remove('selected');
 
-            if (!sheetId) {
-                showResponse(false, "Invalid Google Sheet URL.");
+            if (selectedType === 'keyword') {
+                keywordOptionLabel.classList.add('selected');
+                keywordSection.classList.remove('hidden');
+                profileSection.classList.add('hidden');
+            } else {
+                profileOptionLabel.classList.add('selected');
+                keywordSection.classList.add('hidden');
+                profileSection.classList.remove('hidden');
+            }
+        }
+
+        // --- CORE LOGIC ---
+        async function initializeFirebase() {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+            if (!firebaseConfig) {
+                showResponseView('error', 'Firebase configuration is missing. App cannot start.');
+                console.error("Firebase config not found.");
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('keyword', keyword);
-            formData.append('count', count);
-            formData.append('sheetUrl', sheetUrl);
-            formData.append('sheetId', sheetId);
-            formData.append('dialect', dialect); // Add the selected dialect to the payload
-
             try {
-                const response = await fetch(CREATE_TASK_URL, {
-                    method: "POST",
-                    body: formData 
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Firebase Auth ready. User ID:", userId);
+                    } else {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Anonymous sign-in failed:", error);
+                            showResponseView('error', 'Could not connect to the backend service.');
+                        }
+                    }
                 });
-
-                if (!response.ok) {
-                    throw new Error(`n8n workflow responded with an error: ${response.status} ${response.statusText}`);
-                }
-                
-                showResponse(true);
-
             } catch (error) {
-                console.error("Initiation Error:", error);
-                showResponse(false, error.message);
-            }
-        });
-
-        function showResponse(isSuccess, message = '') {
-            formView.classList.add('hidden');
-            responseView.classList.remove('hidden');
-            if (isSuccess) {
-                successContent.classList.remove('hidden');
-                errorContent.classList.add('hidden');
-            } else {
-                successContent.classList.add('hidden');
-                errorContent.classList.remove('hidden');
-                errorMessage.textContent = message;
+                console.error("Firebase initialization failed:", error);
+                showResponseView('error', 'Critical error: Could not initialize backend services.');
             }
         }
 
-        resetButton.addEventListener('click', () => {
-            responseView.classList.add('hidden');
-            formView.classList.remove('hidden');
-            
-            analyzeForm.reset();
-            videoCountDisplay.textContent = '10';
-            submitButton.disabled = false;
-            buttonText.textContent = 'Launch Workflow';
-        });
-
-        // Number input control logic
-        incrementBtn.addEventListener('click', () => {
-            videoCountDisplay.textContent = parseInt(videoCountDisplay.textContent) + 1;
-        });
-
-        decrementBtn.addEventListener('click', () => {
-            let currentCount = parseInt(videoCountDisplay.textContent);
-            if (currentCount > 1) {
-                videoCountDisplay.textContent = currentCount - 1;
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            if (!db || !auth.currentUser) {
+                showResponseView('error', 'Backend service not ready. Please wait and try again.');
+                return;
             }
+            
+            // Clear previous errors
+            searchInputError.textContent = '';
+            sheetUrlError.textContent = '';
+
+            // Get form values
+            const tiktokType = document.querySelector('input[name="tiktok-type"]:checked').value;
+            const keyword = document.getElementById("keyword-input").value.trim();
+            const profile = document.getElementById("profile-input").value.trim();
+            
+            // Validate search input based on type
+            if (tiktokType === 'keyword' && !keyword) {
+                searchInputError.textContent = 'Keyword cannot be empty.';
+                return;
+            }
+            if (tiktokType === 'profile' && !profile) {
+                searchInputError.textContent = 'Profile username cannot be empty.';
+                return;
+            }
+
+            const videoCount = parseInt(videoCountDisplay.textContent, 10);
+            const sheetUrl = sheetUrlInput.value.trim();
+            const dialect = dialectSelect.value;
+            const sheetId = extractSheetId(sheetUrl);
+
+            if (!sheetId) {
+                sheetUrlError.textContent = 'Invalid Google Sheet URL.';
+                return;
+            }
+
+            setButtonLoading(true, 'Initiating...');
+            
+            const requestId = crypto.randomUUID();
+            const jobTicketRef = doc(db, `/artifacts/${appId}/public/data/analysis_requests/${requestId}`);
+
+            try {
+                // 1. Create the job ticket in Firestore
+                const jobPayload = {
+                    tiktok_type: tiktokType,
+                    keyword: keyword || '',
+                    profile: profile || '',
+                    count: videoCount,
+                    sheetUrl: sheetUrl,
+                    sheetId: sheetId,
+                    dialect: dialect,
+                    status: 'pending',
+                    createdAt: serverTimestamp(),
+                    appId: appId,
+                    userId: auth.currentUser.uid,
+                };
+                await setDoc(jobTicketRef, jobPayload);
+                
+                showResponseView('waiting');
+
+                // 2. Attach the real-time listener
+                unsubscribeFromJob = onSnapshot(jobTicketRef, (doc) => {
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        console.log("Received update from Firestore:", data);
+
+                        if (data.status === 'complete') {
+                            showResponseView('success');
+                            Tone.now();
+                            successSound.triggerAttackRelease("C5", "8n");
+                            if (unsubscribeFromJob) unsubscribeFromJob();
+                        } else if (data.status === 'error') {
+                            showResponseView('error', data.errorMessage || 'An unknown error occurred in the workflow.');
+                            Tone.now();
+                            errorSound.start().stop("+0.5");
+                            if (unsubscribeFromJob) unsubscribeFromJob();
+                        }
+                    }
+                });
+
+                // 3. Trigger the n8n webhook via the hidden form
+                const n8nForm = document.getElementById('n8n-trigger-form');
+                n8nForm.action = N8N_WEBHOOK_URL;
+                document.getElementById('form-requestId').value = requestId;
+                document.getElementById('form-appId').value = appId;
+                n8nForm.submit();
+                
+            } catch (error) {
+                console.error("Error during submission process:", error);
+                showResponseView('error', `Submission Error: ${error.message}`);
+                setButtonLoading(false);
+                Tone.now();
+                errorSound.start().stop("+0.5");
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check auth cookie
+            if (getCookie(COOKIE_NAME)) {
+                loginView.classList.add('hidden');
+                formView.classList.remove('hidden');
+            }
+            
+            initializeFirebase();
+            toggleTikTokOption(); // Set initial state
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                loginError.textContent = '';
+                if (btoa(passwordInput.value) === PASSWORD_B64) {
+                    setCookie(COOKIE_NAME, 'true', 7);
+                    loginView.classList.add('hidden');
+                    formView.classList.remove('hidden');
+                } else {
+                    loginError.textContent = 'Access key is incorrect.';
+                    passwordInput.value = '';
+                }
+            });
+
+            analysisForm.addEventListener("submit", handleFormSubmit);
+
+            resetButton.addEventListener('click', () => {
+                responseView.classList.add('hidden');
+                formView.classList.remove('hidden');
+                analysisForm.reset();
+                videoCountDisplay.textContent = '10';
+                document.querySelector('input[name="tiktok-type"][value="keyword"]').checked = true;
+                toggleTikTokOption();
+                setButtonLoading(false);
+            });
+
+            tiktokTypeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleTikTokOption);
+            });
+
+            incrementBtn.addEventListener('click', () => {
+                videoCountDisplay.textContent = parseInt(videoCountDisplay.textContent) + 1;
+            });
+
+            decrementBtn.addEventListener('click', () => {
+                let currentCount = parseInt(videoCountDisplay.textContent);
+                if (currentCount > 1) {
+                    videoCountDisplay.textContent = currentCount - 1;
+                }
+            });
         });
 
+    </script>
+    <script>
         // --- INTERACTIVE STARS BACKGROUND SCRIPT ---
         const canvas = document.getElementById('stars-canvas');
         const ctx = canvas.getContext('2d');
         let stars = [];
         let mouse = { x: null, y: null };
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initStars(); // Re-initialize stars on resize to fit new dimensions
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.x;
-            mouse.y = e.y;
-        });
-        window.addEventListener('mouseout', () => {
-            mouse.x = null;
-            mouse.y = null;
-        });
-        
+        // Define the Star class before it is used
         class Star {
             constructor(x, y, radius, vx, vy) {
                 this.x = x;
@@ -383,7 +629,7 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fillStyle = `rgba(229, 231, 235, ${this.opacity})`;
                 ctx.fill();
             }
 
@@ -393,8 +639,7 @@
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 100) {
-                        // Push star away from cursor
+                    if (distance < 150) {
                         this.x -= dx / 20;
                         this.y -= dy / 20;
                     }
@@ -405,8 +650,8 @@
                 this.y += this.vy;
 
                 // Wall collision
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) this.vx *= -1;
+                if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) this.vy *= -1;
 
                 this.draw();
             }
@@ -418,7 +663,7 @@
             for (let i = 0; i < numberOfStars; i++) {
                 let x = Math.random() * canvas.width;
                 let y = Math.random() * canvas.height;
-                let radius = Math.random() * 1.5;
+                let radius = Math.random() * 1.5 + 0.5;
                 let vx = (Math.random() - 0.5) * 0.2;
                 let vy = (Math.random() - 0.5) * 0.2;
                 stars.push(new Star(x, y, radius, vx, vy));
@@ -432,8 +677,25 @@
             }
             requestAnimationFrame(animate);
         }
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars();
+        }
+        
+        // Initial setup and event listeners
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
 
-        initStars();
+        resizeCanvas();
         animate();
     </script>
 </body>
