@@ -136,28 +136,9 @@
 
                 <form id="analyzeForm">
                     <div class="space-y-6">
-
-                        <!-- Search Type -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-300">Search Type</label>
-                            <div class="select-wrapper mt-1">
-                                <select id="search-type" name="searchType" class="w-full px-4 py-3 rounded-lg galaxy-input">
-                                    <option value="keyword">TikTok Keyword</option>
-                                    <option value="profile">TikTok Profile</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Keyword Input -->
-                        <div id="keyword-group">
                             <label for="keyword" class="block text-sm font-medium text-gray-300">TikTok Keyword</label>
                             <input type="text" id="keyword" name="keyword" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter your search keyword...">
-                        </div>
-
-                        <!-- Profile Input -->
-                        <div id="profile-group" class="hidden">
-                            <label for="profile" class="block text-sm font-medium text-gray-300">TikTok Profile</label>
-                            <input type="text" id="profile" name="profile" class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter TikTok profile handle...">
                         </div>
 
                         <div>
@@ -220,7 +201,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const CREATE_TASK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook-test/4a6a6eb0-3366-4503-abcc-eee9c1707069';
+        const CREATE_TASK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook/4a6a6eb0-3366-4503-abcc-eee9c1707069';
         const PASSWORD_B64 = 'Tm91cmE='; // "Noura" in Base64
         const COOKIE_NAME = 'wolver_hub_auth_session';
 
@@ -245,13 +226,6 @@
         const decrementBtn = document.getElementById('decrement-btn');
         const incrementBtn = document.getElementById('increment-btn');
         const dialectSelect = document.getElementById('dialect-select');
-
-        // New elements for search type logic
-        const searchTypeSelect = document.getElementById('search-type');
-        const keywordGroup = document.getElementById('keyword-group');
-        const profileGroup = document.getElementById('profile-group');
-        const profileInput = document.getElementById('profile');
-        const keywordInput = document.getElementById('keyword');
 
         // --- UTILITY FUNCTIONS ---
         const setCookie = (name, value, days) => {
@@ -281,22 +255,6 @@
             formView.classList.remove('hidden');
         }
 
-        const updateSearchType = () => {
-            if (searchTypeSelect.value === 'keyword') {
-                keywordGroup.classList.remove('hidden');
-                profileGroup.classList.add('hidden');
-                keywordInput.required = true;
-                profileInput.required = false;
-            } else {
-                keywordGroup.classList.add('hidden');
-                profileGroup.classList.remove('hidden');
-                keywordInput.required = false;
-                profileInput.required = true;
-            }
-        };
-        updateSearchType();
-        searchTypeSelect.addEventListener('change', updateSearchType);
-
         // --- EVENT LISTENERS ---
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -316,9 +274,7 @@
             submitButton.disabled = true;
             buttonText.textContent = 'Launching...';
 
-            const searchType = searchTypeSelect.value;
-            const keyword = searchType === 'keyword' ? keywordInput.value.trim() : '';
-            const profile = searchType === 'profile' ? profileInput.value.trim() : '';
+            const keyword = document.getElementById("keyword").value.trim();
             const count = videoCountDisplay.textContent;
             const sheetUrl = document.getElementById("sheetUrl").value.trim();
             const dialect = dialectSelect.value;
@@ -332,11 +288,10 @@
 
             const formData = new FormData();
             formData.append('keyword', keyword);
-            formData.append('profile', profile);
             formData.append('count', count);
             formData.append('sheetUrl', sheetUrl);
             formData.append('sheetId', sheetId);
-            formData.append('dialect', dialect);
+            formData.append('dialect', dialect); // Add the selected dialect to the payload
 
             try {
                 const response = await fetch(CREATE_TASK_URL, {
@@ -377,7 +332,6 @@
             videoCountDisplay.textContent = '10';
             submitButton.disabled = false;
             buttonText.textContent = 'Launch Workflow';
-            updateSearchType();
         });
 
         // Number input control logic
