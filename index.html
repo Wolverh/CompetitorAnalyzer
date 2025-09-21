@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOLVER'S HUB - Task Initiator</title>
     
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -128,7 +127,6 @@
     <canvas id="stars-canvas"></canvas>
 
     <div class="w-full max-w-lg">
-        <!-- Login View -->
         <div id="login-view">
             <div class="glass-card p-8 rounded-2xl shadow-2xl">
                 <h1 class="text-3xl font-bold text-center text-white mb-2">WOLVER'S HUB</h1>
@@ -146,7 +144,6 @@
             </div>
         </div>
 
-        <!-- Main App View -->
         <div id="form-view" class="hidden">
             <div class="glass-card p-8 rounded-2xl shadow-2xl">
                 <h1 class="text-3xl font-bold text-center text-white mb-2">WOLVER'S HUB</h1>
@@ -154,7 +151,6 @@
 
                 <form id="analyzeForm">
                     <div class="space-y-6">
-                        <!-- Search Type Selection -->
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-3">Search Type</label>
                             <div class="grid grid-cols-2 gap-4">
@@ -169,7 +165,6 @@
                             </div>
                         </div>
 
-                        <!-- Dynamic Input Fields -->
                         <div id="keyword-field" class="fade-in">
                             <label for="keyword" class="block text-sm font-medium text-gray-300">TikTok Keyword</label>
                             <input type="text" id="keyword" name="keyword" class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter your search keyword...">
@@ -218,7 +213,6 @@
             </div>
         </div>
 
-        <!-- Success/Error Views -->
         <div id="response-view" class="hidden">
              <div class="glass-card p-8 rounded-2xl shadow-2xl text-center">
                 <div id="success-content">
@@ -240,7 +234,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const CREATE_TASK_URL = 'https://n8n.srv898897.hstgr.cloud/webhook/4a6a6eb0-3366-4503-abcc-eee9c1707069';
+        const CREATE_TASK_URL = 'https://n8n.wolver.site/webhook/4a6a6eb0-3366-4503-abcc-eee9c1707069';
         const PASSWORD_B64 = 'a2hhdGF3YXQ='; // "khatawat" in Base64
         const COOKIE_NAME = 'wolver_hub_auth_session';
 
