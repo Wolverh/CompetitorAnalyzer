@@ -167,7 +167,20 @@
 
                         <div id="keyword-field" class="fade-in">
                             <label for="keyword" class="block text-sm font-medium text-gray-300">TikTok Keyword</label>
-                            <input type="text" id="keyword" name="keyword" class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter your search keyword...">
+                            <div class="select-wrapper mt-1">
+                                <select id="keyword" name="keyword" class="w-full px-4 py-3 rounded-lg galaxy-input">
+                                    <option>الأزياء والموضة</option>
+                                    <option>الجمال والعناية الشخصية</option>
+                                    <option>الصحة واللياقة</option>
+                                    <option>المنزل والديكور</option>
+                                    <option>الأمومة والطفولة</option>
+                                    <option>الإلكترونيات والإكسسوارات التقنية</option>
+                                    <option>المأكولات والمشروبات</option>
+                                    <option>الهوايات واللايف ستايل</option>
+                                    <option>المنتجات التراثية / الثقافية</option>
+                                    <option>الخدمات الرقمية</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div id="profile-field" class="hidden">
@@ -195,19 +208,30 @@
                             <label class="block text-sm font-medium text-gray-300">Number of Videos</label>
                             <div class="mt-1 flex rounded-lg">
                                 <button type="button" id="decrement-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-l-lg">-</button>
-                                <span id="video-count-display" class="number-display w-full h-12 text-center text-lg font-semibold flex items-center justify-center">10</span>
+                                <span id="video-count-display" class="number-display w-full h-12 text-center text-lg font-semibold flex items-center justify-center">15</span>
                                 <button type="button" id="increment-btn" class="number-control-button font-bold w-12 h-12 text-2xl rounded-r-lg">+</button>
                             </div>
                         </div>
 
-                        <div>
-                            <label for="sheetUrl" class="block text-sm font-medium text-gray-300">Google Sheet URL</label>
-                            <input type="url" id="sheetUrl" name="sheetUrl" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Paste your target Google Sheet URL">
-                        </div>
+                        <!-- Hidden Google Sheet URL -->
+                        <input type="hidden" id="sheetUrl" name="sheetUrl" value="https://docs.google.com/spreadsheets/d/1zlWbJEB1V2PqEF-7kyeLsm3EWO6VLbLY1dr1oY81SFs/edit?gid=0#gid=0">
 
                         <div>
                             <label for="sheetName" class="block text-sm font-medium text-gray-300">Sheet Name</label>
-                            <input type="text" id="sheetName" name="sheetName" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="e.g., Sheet1" value="Sheet1">
+                            <div class="select-wrapper mt-1">
+                                <select id="sheetName" name="sheetName" required class="w-full px-4 py-3 rounded-lg galaxy-input">
+                                    <option>الأزياء والموضة</option>
+                                    <option>الجمال والعناية الشخصية</option>
+                                    <option>الصحة واللياقة</option>
+                                    <option>المنزل والديكور</option>
+                                    <option>الأمومة والطفولة</option>
+                                    <option>الإلكترونيات والإكسسوارات التقنية</option>
+                                    <option>المأكولات والمشروبات</option>
+                                    <option>الهوايات واللايف ستايل</option>
+                                    <option>المنتجات التراثية / الثقافية</option>
+                                    <option>الخدمات الرقمية</option>
+                                </select>
+                            </div>
                         </div>
 
                     </div>
@@ -407,7 +431,7 @@
             formView.classList.remove('hidden');
             
             analyzeForm.reset();
-            videoCountDisplay.textContent = '10';
+            videoCountDisplay.textContent = '15'; // Reset to 15
             submitButton.disabled = false;
             buttonText.textContent = 'Launch Workflow';
             
@@ -520,3 +544,4 @@
     </script>
 </body>
 </html>
+
