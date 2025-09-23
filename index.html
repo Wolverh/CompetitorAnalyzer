@@ -16,15 +16,17 @@
             overflow: hidden; /* Hide scrollbars caused by canvas */
         }
 
+        /* --- Interactive Stars Background --- */
         #stars-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: -1; /* Place it behind all content */
         }
 
+        /* --- Glassmorphism Card --- */
         .glass-card {
             background: rgba(17, 24, 39, 0.6);
             backdrop-filter: blur(16px);
@@ -32,14 +34,15 @@
             border: 1px solid rgba(128, 137, 162, 0.15);
         }
 
+        /* --- Input Styling --- */
         .galaxy-input {
             background-color: rgba(13, 17, 23, 0.8);
             border: 1px solid #30363d;
             color: #c9d1d9;
             transition: all 0.2s ease-in-out;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
+            -webkit-appearance: none; /* Removes default Safari styling */
+            -moz-appearance: none; /* Removes default Firefox styling */
+            appearance: none; /* Removes default browser styling */
         }
         .galaxy-input::placeholder {
             color: #8b949e;
@@ -63,6 +66,7 @@
             pointer-events: none;
         }
 
+        /* --- Radio Button Styling --- */
         .radio-option {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -71,6 +75,7 @@
             accent-color: #a78bfa;
         }
 
+        /* --- Main Button Styling --- */
         .galaxy-button {
             background-image: linear-gradient(to right, #818cf8, #a78bfa, #c084fc);
             background-size: 200% auto;
@@ -88,6 +93,7 @@
             opacity: 0.7;
         }
 
+        /* --- Fancy Number Input Styling --- */
         .number-control-button {
             background-color: #374151;
             color: #e5e7eb;
@@ -105,6 +111,7 @@
             border-bottom: 1px solid #30363d;
         }
 
+        /* --- Hide/Show Animation --- */
         .fade-in {
             animation: fadeIn 0.3s ease-in-out;
         }
@@ -198,11 +205,11 @@
                             <input type="url" id="sheetUrl" name="sheetUrl" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Paste your target Google Sheet URL">
                         </div>
 
-                        <!-- NEW SHEET NAME FIELD -->
                         <div>
-                            <label for="sheetName" class="block text-sm font-medium text-gray-300">Google Sheet Name</label>
-                            <input type="text" id="sheetName" name="sheetName" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="Enter the sheet name (tab name in Google Sheets)">
+                            <label for="sheetName" class="block text-sm font-medium text-gray-300">Sheet Name</label>
+                            <input type="text" id="sheetName" name="sheetName" required class="mt-1 w-full px-4 py-3 rounded-lg galaxy-input" placeholder="e.g., Sheet1" value="Sheet1">
                         </div>
+
                     </div>
                     <button id="submit-button" type="submit" class="mt-10 w-full text-white font-bold py-3 px-4 rounded-lg galaxy-button flex items-center justify-center space-x-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -214,28 +221,30 @@
 
         <div id="response-view" class="hidden">
              <div class="glass-card p-8 rounded-2xl shadow-2xl text-center">
-                <div id="success-content">
-                    <svg class="w-16 h-16 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h2 class="text-2xl font-bold text-white mt-4">Workflow Launched!</h2>
-                    <p class="text-gray-300 mt-2">Your request has been sent to n8n. The results will appear in your designated Google Sheet shortly.</p>
-                </div>
-                <div id="error-content" class="hidden">
-                    <svg class="w-16 h-16 mx-auto text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h2 class="text-2xl font-bold text-white mt-4">Launch Failed</h2>
-                    <p id="error-message" class="text-gray-300 mt-2">Could not send the request to the workflow. Please check the console for details.</p>
-                </div>
-                <button id="reset-button" class="mt-8 w-1/2 mx-auto text-white font-semibold py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 transition-colors">
-                    Try Again
-                </button>
+                 <div id="success-content">
+                     <svg class="w-16 h-16 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                     <h2 class="text-2xl font-bold text-white mt-4">Workflow Launched!</h2>
+                     <p class="text-gray-300 mt-2">Your request has been sent to n8n. The results will appear in your designated Google Sheet shortly.</p>
+                 </div>
+                 <div id="error-content" class="hidden">
+                     <svg class="w-16 h-16 mx-auto text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                     <h2 class="text-2xl font-bold text-white mt-4">Launch Failed</h2>
+                     <p id="error-message" class="text-gray-300 mt-2">Could not send the request to the workflow. Please check the console for details.</p>
+                 </div>
+                 <button id="reset-button" class="mt-8 w-1/2 mx-auto text-white font-semibold py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 transition-colors">
+                     Try Again
+                 </button>
              </div>
         </div>
     </div>
 
     <script>
+        // --- CONFIGURATION ---
         const CREATE_TASK_URL = 'https://n8n.wolver.site/webhook/4a6a6eb0-3366-4503-abcc-eee9c1707069';
-        const PASSWORD_B64 = 'a2hhdGF3YXQ=';
+        const PASSWORD_B64 = 'a2hhdGF3YXQ='; // "khatawat" in Base64
         const COOKIE_NAME = 'wolver_hub_auth_session';
 
+        // --- DOM ELEMENTS ---
         const loginView = document.getElementById('login-view');
         const formView = document.getElementById('form-view');
         const responseView = document.getElementById('response-view');
@@ -257,12 +266,14 @@
         const incrementBtn = document.getElementById('increment-btn');
         const dialectSelect = document.getElementById('dialect-select');
 
+        // Search type elements
         const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
         const keywordField = document.getElementById('keyword-field');
         const profileField = document.getElementById('profile-field');
         const keywordInput = document.getElementById('keyword');
         const profileInput = document.getElementById('profile');
 
+        // --- UTILITY FUNCTIONS ---
         const setCookie = (name, value, days) => {
             let expires = "";
             if (days) {
@@ -284,6 +295,7 @@
             return null;
         };
 
+        // --- SEARCH TYPE TOGGLE FUNCTION ---
         const toggleSearchType = () => {
             const selectedType = document.querySelector('input[name="searchType"]:checked').value;
             
@@ -293,22 +305,26 @@
                 profileField.classList.add('hidden');
                 keywordInput.required = true;
                 profileInput.required = false;
-                profileInput.value = '';
+                profileInput.value = ''; // Clear profile when switching to keyword
             } else {
                 profileField.classList.remove('hidden');
                 profileField.classList.add('fade-in');
                 keywordField.classList.add('hidden');
                 profileInput.required = true;
                 keywordInput.required = false;
-                keywordInput.value = '';
+                keywordInput.value = ''; // Clear keyword when switching to profile
             }
         };
 
+        // --- INITIALIZATION ---
         if (getCookie(COOKIE_NAME)) {
             loginView.classList.add('hidden');
             formView.classList.remove('hidden');
         }
 
+        // --- EVENT LISTENERS ---
+        
+        // Search type radio button listeners
         searchTypeRadios.forEach(radio => {
             radio.addEventListener('change', toggleSearchType);
         });
@@ -335,7 +351,7 @@
             const profile = profileInput.value.trim();
             const count = videoCountDisplay.textContent;
             const sheetUrl = document.getElementById("sheetUrl").value.trim();
-            const sheetName = document.getElementById("sheetName").value.trim(); // NEW FIELD
+            const sheetName = document.getElementById("sheetName").value.trim();
             const dialect = dialectSelect.value;
             const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
             const sheetId = match ? match[1] : null;
@@ -346,12 +362,13 @@
             }
 
             const formData = new FormData();
+            // Always send both keyword and profile fields
             formData.append('keyword', keyword);
             formData.append('profile', profile);
             formData.append('count', count);
             formData.append('sheetUrl', sheetUrl);
             formData.append('sheetId', sheetId);
-            formData.append('sheetName', sheetName); // APPENDED
+            formData.append('sheetName', sheetName);
             formData.append('dialect', dialect);
 
             try {
@@ -377,4 +394,129 @@
             responseView.classList.remove('hidden');
             if (isSuccess) {
                 successContent.classList.remove('hidden');
-                error
+                errorContent.classList.add('hidden');
+            } else {
+                successContent.classList.add('hidden');
+                errorContent.classList.remove('hidden');
+                errorMessage.textContent = message;
+            }
+        }
+
+        resetButton.addEventListener('click', () => {
+            responseView.classList.add('hidden');
+            formView.classList.remove('hidden');
+            
+            analyzeForm.reset();
+            videoCountDisplay.textContent = '10';
+            submitButton.disabled = false;
+            buttonText.textContent = 'Launch Workflow';
+            
+            // Reset to keyword search type
+            document.querySelector('input[name="searchType"][value="keyword"]').checked = true;
+            toggleSearchType();
+        });
+
+        // Number input control logic
+        incrementBtn.addEventListener('click', () => {
+            videoCountDisplay.textContent = parseInt(videoCountDisplay.textContent) + 1;
+        });
+
+        decrementBtn.addEventListener('click', () => {
+            let currentCount = parseInt(videoCountDisplay.textContent);
+            if (currentCount > 1) {
+                videoCountDisplay.textContent = currentCount - 1;
+            }
+        });
+
+        // --- INTERACTIVE STARS BACKGROUND SCRIPT ---
+        const canvas = document.getElementById('stars-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        let mouse = { x: null, y: null };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars(); // Re-initialize stars on resize to fit new dimensions
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+        
+        class Star {
+            constructor(x, y, radius, vx, vy) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.vx = vx;
+                this.vy = vy;
+                this.baseRadius = radius;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+
+            update() {
+                // Mouse interaction
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 100) {
+                        // Push star away from cursor
+                        this.x -= dx / 20;
+                        this.y -= dy / 20;
+                    }
+                }
+
+                // Movement
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wall collision
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                this.draw();
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            let numberOfStars = (canvas.width * canvas.height) / 9000;
+            for (let i = 0; i < numberOfStars; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let radius = Math.random() * 1.5;
+                let vx = (Math.random() - 0.5) * 0.2;
+                let vy = (Math.random() - 0.5) * 0.2;
+                stars.push(new Star(x, y, radius, vx, vy));
+            }
+        }
+
+        function animate() {
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                stars.forEach(star => star.update());
+            }
+            requestAnimationFrame(animate);
+        }
+
+        initStars();
+        animate();
+    </script>
+</body>
+</html>
